@@ -151,13 +151,25 @@ public class VkontakteAPI {
         }
         for (int i = 0; i < photosJson.length(); i++) {
             JSONArray photoInfo = (JSONArray) photosJson.get(i);
-            photos.add(new Photo(photoInfo));
+            photos.add(new Photo(photoInfo, this));
         }
         return photos;
     }
 
-    private String getTextFromUrl(URL url) throws IOException {
-        HttpGet httpGet = new HttpGet(url.toString());
+    protected byte[] getFileFromUrl(String url) throws IOException {
+        HttpGet httpGet = new HttpGet(url);
+        HttpResponse response = httpClient.execute(httpGet);
+        HttpEntity httpEntity = response.getEntity();
+        byte[] result = null;
+        if (httpEntity != null) {
+            result = EntityUtils.toByteArray(httpEntity);
+            httpEntity.consumeContent();
+        }
+        return result;
+    }
+
+    private String getTextFromUrl(String url) throws IOException {
+        HttpGet httpGet = new HttpGet(url);
         HttpResponse response = httpClient.execute(httpGet);
         HttpEntity httpEntity = response.getEntity();
         String result = null;
@@ -166,6 +178,10 @@ public class VkontakteAPI {
             httpEntity.consumeContent();
         }
         return result;
+    }
+
+    private String getTextFromUrl(URL url) throws IOException {
+        return getTextFromUrl(url.toString());
     }
 
 }

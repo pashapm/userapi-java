@@ -3,13 +3,17 @@ package org.googlecode.userapi;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.IOException;
+
 public class Photo {
     private long userId;
     private long photoId;
     private String thumbnailUrl;
     private String imageUrl;
+    private VkontakteAPI api;
 
-    public Photo(JSONArray photoInfo) throws JSONException {
+    public Photo(JSONArray photoInfo, VkontakteAPI api) throws JSONException {
+        this.api = api;
         userId = Long.parseLong(photoInfo.getString(0).split("_")[0]);
         photoId = Long.parseLong(photoInfo.getString(0).split("_")[1]);
         thumbnailUrl = photoInfo.getString(1);
@@ -26,6 +30,14 @@ public class Photo {
 
     public String getThumbnailUrl() {
         return thumbnailUrl;
+    }
+
+    public byte[] getThumbnail() throws IOException {
+        return api.getFileFromUrl(thumbnailUrl);
+    }
+
+    public byte[] getImage() throws IOException {
+        return api.getFileFromUrl(imageUrl);
     }
 
     public String getImageUrl() {
