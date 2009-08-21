@@ -94,6 +94,7 @@ public class VkontakteAPI {
         List<Cookie> cookies = httpClient.getCookieStore().getCookies();
         for (Cookie cookie : cookies) {
             if (cookie.getName().equalsIgnoreCase("remixpassword")) remixpassword = cookie.getValue();
+            if (cookie.getName().equalsIgnoreCase("remixmid")) id = cookie.getValue();
         }
         return remixpassword != null;
     }

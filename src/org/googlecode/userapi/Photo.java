@@ -14,6 +14,7 @@ public class Photo {
 
     public Photo(JSONArray photoInfo, VkontakteAPI api) throws JSONException {
         this.api = api;
+        //todo: handle ["_0","images\/m_null.gif","images\/x_null.gif"] - server wit photo temporary unavailable
         userId = Long.parseLong(photoInfo.getString(0).split("_")[0]);
         photoId = Long.parseLong(photoInfo.getString(0).split("_")[1]);
         thumbnailUrl = photoInfo.getString(1);
