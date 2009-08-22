@@ -115,9 +115,11 @@ public class VkontakteAPI {
     }
 
     /**
-     * Returns the list of the user's friends
+     * Returns friend list for a user
      *
      * @param id   user id
+     * @param from first entry no.
+     * @param to   last entry no.
      * @param type - type of friends to return
      * @return the last element in this list
      * @throws java.io.IOException in case of connection problems
@@ -139,6 +141,16 @@ public class VkontakteAPI {
         return friends;
     }
 
+    /**
+     * Returns photo list for a user
+     *
+     * @param id   user id
+     * @param from first entry no.
+     * @param to   last entry no.
+     * @param type - type of photos to return
+     * @return the last element in this list
+     * @throws java.io.IOException in case of connection problems
+     */
     public List<Photo> getPhotos(String id, int from, int to, photosTypes type) throws IOException, JSONException {
         List<Photo> photos = new LinkedList<Photo>();
         URL url = new URL("http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
