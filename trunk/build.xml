@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="userapi-java" default="all">
+    <!-- Project Libraries -->
+
+    <path id="library.lib.classpath">
+        <pathelement location="${basedir}/lib/commons-logging-1.1.1.jar"/>
+        <pathelement location="${basedir}/lib/httpclient-4.0.jar"/>
+        <pathelement location="${basedir}/lib/httpcore-4.0.1.jar"/>
+        <pathelement location="${basedir}/lib/jcip-annotations-1.0.jar"/>
+        <pathelement location="${basedir}/lib/json.jar"/>
+    </path>
+
+
+    <path id="userapi-java.module.classpath">
+        <path refid="library.lib.classpath"/>
+    </path>
+
+    <path id="userapi-java.runtime.module.classpath">
+        <pathelement location="out"/>
+        <path refid="library.lib.classpath"/>
+    </path>
+
+
+    <target name="compile">
+        <mkdir dir="out"/>
+        <javac destdir="out" srcdir="src">
+            <classpath refid="library.lib.classpath"/>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="out/userapi-java.jar" basedir="out"/>
+    </target>
+
+    <target name="clean" description="cleanup module">
+        <delete dir="out"/>
+    </target>
+
+    <target name="all" depends="clean, compile" description="build all"/>
+</project>
