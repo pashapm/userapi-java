@@ -14,11 +14,14 @@ public class Photo {
 
     public Photo(JSONArray photoInfo, VkontakteAPI api) throws JSONException {
         this.api = api;
-        //todo: handle ["_0","images\/m_null.gif","images\/x_null.gif"] - server wit photo temporary unavailable
-        userId = Long.parseLong(photoInfo.getString(0).split("_")[0]);
-        photoId = Long.parseLong(photoInfo.getString(0).split("_")[1]);
-        thumbnailUrl = photoInfo.getString(1);
-        imageUrl = photoInfo.getString(2);
+        //todo: handle ["_0","images\/m_null.gif","images\/x_null.gif"] - server with photo temporary unavailable;
+        //todo: handle no photo set - images/question_b.gif
+        if (!photoInfo.getString(0).equalsIgnoreCase("_0")) {
+            userId = Long.parseLong(photoInfo.getString(0).split("_")[0]);
+            photoId = Long.parseLong(photoInfo.getString(0).split("_")[1]);
+            thumbnailUrl = photoInfo.getString(1);
+            imageUrl = photoInfo.getString(2);
+        }
     }
 
     public long getUserId() {
