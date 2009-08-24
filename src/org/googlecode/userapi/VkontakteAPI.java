@@ -26,10 +26,11 @@ import java.util.List;
 public class VkontakteAPI {
     String login;
     String sid;
-    public String id;
+    public long id;
 
     private String remixpassword;
     private DefaultHttpClient httpClient;
+    private static final int SITE_ID = 2;
 
     public enum friendsTypes {
         friends, friends_mutual, friends_online, friends_new
@@ -37,6 +38,10 @@ public class VkontakteAPI {
 
     public enum photosTypes {
         photos, photos_with, photos_new
+    }
+
+    public enum privateMessagesTypes {
+        message, inbox, outbox
     }
 
     public VkontakteAPI() {
@@ -65,11 +70,15 @@ public class VkontakteAPI {
         if (api.login("email", "pass")) {
             List<Photo> photos = api.getPhotos(api.id, 0, 20, photosTypes.photos_new);
             List<User> friends = api.getFriends(api.id, 0, 20, friendsTypes.friends_new);
+            List<Message> messages = api.getWallMessages(api.id, 0, 20);
             for (User user : friends) {
                 System.out.println(user);
             }
             for (Photo photo : photos) {
                 System.out.println(photo);
+            }
+            for (Message message : messages) {
+                System.out.println(message);
             }
         } else {
             System.out.println("login failed!");
@@ -77,7 +86,7 @@ public class VkontakteAPI {
     }
 
     public boolean login(String email, String pass) throws IOException {
-        String urlString = "http://login.userapi.com/auth?login=force&site=2&email=" + email + "&pass=" + pass;
+        String urlString = "http://login.userapi.com/auth?login=force&site=" + SITE_ID + "&email=" + email + "&pass=" + pass;
         HttpGet get = new HttpGet(urlString);
         HttpContext context = new BasicHttpContext();
         HttpResponse response = httpClient.execute(get, context);
@@ -94,7 +103,7 @@ public class VkontakteAPI {
         List<Cookie> cookies = httpClient.getCookieStore().getCookies();
         for (Cookie cookie : cookies) {
             if (cookie.getName().equalsIgnoreCase("remixpassword")) remixpassword = cookie.getValue();
-            if (cookie.getName().equalsIgnoreCase("remixmid")) id = cookie.getValue();
+            if (cookie.getName().equalsIgnoreCase("remixmid")) id = Long.parseLong(cookie.getValue());
         }
         return remixpassword != null;
     }
@@ -123,8 +132,9 @@ public class VkontakteAPI {
      * @param type - type of friends to return
      * @return the last element in this list
      * @throws java.io.IOException in case of connection problems
+     * @throws org.json.JSONException
      */
-    public List<User> getFriends(String id, int from, int to, friendsTypes type) throws IOException, JSONException {
+    public List<User> getFriends(long id, int from, int to, friendsTypes type) throws IOException, JSONException {
         List<User> friends = new LinkedList<User>();
         URL url = new URL("http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
         String jsonText = getTextFromUrl(url);
@@ -136,7 +146,7 @@ public class VkontakteAPI {
         }
         for (int i = 0; i < fr.length(); i++) {
             JSONArray userInfo = (JSONArray) fr.get(i);
-            friends.add(new User(userInfo));
+            friends.add(new User(userInfo, this));
         }
         return friends;
     }
@@ -150,8 +160,9 @@ public class VkontakteAPI {
      * @param type - type of photos to return
      * @return the last element in this list
      * @throws java.io.IOException in case of connection problems
+     * @throws org.json.JSONException
      */
-    public List<Photo> getPhotos(String id, int from, int to, photosTypes type) throws IOException, JSONException {
+    public List<Photo> getPhotos(long id, int from, int to, photosTypes type) throws IOException, JSONException {
         List<Photo> photos = new LinkedList<Photo>();
         URL url = new URL("http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
         String jsonText = getTextFromUrl(url);
@@ -168,6 +179,73 @@ public class VkontakteAPI {
         }
         return photos;
     }
+
+    public List<Message> getPrivateMessages(long id, int from, int to, privateMessagesTypes type) throws IOException, JSONException {
+        List<Message> messages = new LinkedList<Message>();
+        URL url = new URL("http://userapi.com/data?act=" + type + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
+        String jsonText = getTextFromUrl(url);
+        JSONObject messagesJson = new JSONObject(jsonText);
+        Long count = messagesJson.getLong("n");
+        Long history = messagesJson.getLong("h");
+        JSONArray messagesArray = messagesJson.getJSONArray("d");
+        for (int i = 0; i < messagesArray.length(); i++) {
+            JSONArray messageJson;
+            if (type == privateMessagesTypes.message) {
+                messageJson = (JSONArray) messagesArray.get(i);
+            } else {
+                JSONObject element = messagesArray.getJSONObject(i);
+                Object[] objects = {element.getLong("0"), element.getLong("1"), element.getJSONArray("2"), element.getJSONArray("3"), element.getJSONArray("4"), element.getInt("5")};
+                messageJson = new JSONArray(objects);
+            }
+            messages.add(new Message(messageJson, this));
+        }
+        //todo: total count
+        return messages;
+    }
+
+    /**
+     * Returns wall messages list for a user
+     *
+     * @param id   user id
+     * @param from first entry no.
+     * @param to   last entry no.
+     * @return the last element in this list
+     * @throws java.io.IOException    in case of connection problems
+     * @throws org.json.JSONException
+     */
+    public List<Message> getWallMessages(long id, int from, int to) throws IOException, JSONException {
+        List<Message> messages = new LinkedList<Message>();
+        URL url = new URL("http://userapi.com/data?act=" + "wall" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
+        String jsonText = getTextFromUrl(url);
+        System.out.println(jsonText);
+        JSONObject messagesJson = new JSONObject(jsonText);
+        Long count = messagesJson.getLong("n");
+        Long history = messagesJson.getLong("h");
+        JSONArray messagesArray = messagesJson.getJSONArray("d");
+        for (int i = 0; i < messagesArray.length(); i++) {
+            JSONArray messageJson = (JSONArray) messagesArray.get(i);
+            messages.add(new Message(messageJson, this));
+        }
+        return messages;
+    }
+
+//    public List<Message> getStatusMessages(long id, int from, int to) throws IOException, JSONException {
+//        List<Message> messages = new LinkedList<Message>();
+//        URL url = new URL("http://userapi.com/data?" + "activity" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
+//        String jsonText = getTextFromUrl(url);
+//        System.out.println(jsonText);
+//        todo: total count
+//        return messages;
+//    }
+
+
+//    public ProfileInfo getProfile(long id) throws IOException, JSONException {
+//        URL url = new URL("http://userapi.com/data?act=" + "profile" + "&id=" + id + "&sid=" + sid);
+//        String jsonText = getTextFromUrl(url);
+//        System.out.println(jsonText);
+//        return new ProfileInfo();
+//    }
+
 
     protected byte[] getFileFromUrl(String url) throws IOException {
         HttpGet httpGet = new HttpGet(url);
