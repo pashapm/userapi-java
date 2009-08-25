@@ -29,12 +29,12 @@
     </target>
 
     <target name="jar" depends="compile">
-        <jar destfile="out/userapi-java.jar" basedir="out"/>
+        <jar destfile="userapi-java.jar" basedir="out"/>
     </target>
 
     <target name="clean" description="cleanup module">
         <delete dir="out"/>
     </target>
 
-    <target name="all" depends="clean, compile" description="build all"/>
+    <target name="all" depends="clean, compile, jar" description="build all"/>
 </project>

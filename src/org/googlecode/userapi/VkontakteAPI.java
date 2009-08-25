@@ -80,6 +80,7 @@ public class VkontakteAPI {
 
 
         sid = finalRequest.getURI().getFragment().substring("0;sid=".length());
+        System.out.println(sid);
         List<Cookie> cookies = httpClient.getCookieStore().getCookies();
         for (Cookie cookie : cookies) {
             if (cookie.getName().equalsIgnoreCase("remixpassword")) remixpassword = cookie.getValue();
@@ -106,29 +107,33 @@ public class VkontakteAPI {
     /**
      * Returns friend list for a user
      *
-     * @param id   user id
-     * @param from first entry no.
-     * @param to   last entry no.
+     * @param id   user ID
+     * @param from no. of first entry required (zero-based)
+     * @param to   no. of last entry required (plus one)
      * @param type - type of friends to return
-     * @return the last element in this list
+     * @return friend list for a user
      * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException
      */
-    public List<User> getFriends(long id, int from, int to, friendsTypes type) throws IOException, JSONException {
+    public ListWithTotal<User> getFriends(long id, int from, int to, friendsTypes type) throws IOException, JSONException {
         List<User> friends = new LinkedList<User>();
         URL url = new URL("http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
         String jsonText = getTextFromUrl(url);
+        System.out.println(jsonText);
         JSONArray fr;
-        if (type == friendsTypes.friends) {
-            fr = new JSONArray(jsonText);
+        long count = -1;
+        if (type == friendsTypes.friends_new) {
+            JSONObject object = new JSONObject(jsonText);
+            count = object.getLong("n");
+            fr = object.getJSONArray("d");
         } else {
-            fr = new JSONObject(jsonText).getJSONArray("d");
+            fr = new JSONArray(jsonText);
         }
         for (int i = 0; i < fr.length(); i++) {
             JSONArray userInfo = (JSONArray) fr.get(i);
             friends.add(new User(userInfo, this));
         }
-        return friends;
+        return new ListWithTotal<User>(friends, count);
     }
 
     /**
