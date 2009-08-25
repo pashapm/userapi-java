@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Arrays;
 
 public class VkontakteAPI {
     String login;
@@ -62,27 +63,6 @@ public class VkontakteAPI {
         httpClient.getCookieSpecs().register("accept_all", acceptAllFactory);
         httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, "accept_all");
         httpClient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
-    }
-
-
-    public static void main(String[] args) throws IOException, JSONException {
-        VkontakteAPI api = new VkontakteAPI();
-        if (api.login("email", "pass")) {
-            List<Photo> photos = api.getPhotos(api.id, 0, 20, photosTypes.photos_new);
-            List<User> friends = api.getFriends(api.id, 0, 20, friendsTypes.friends_new);
-            List<Message> messages = api.getWallMessages(api.id, 0, 20);
-            for (User user : friends) {
-                System.out.println(user);
-            }
-            for (Photo photo : photos) {
-                System.out.println(photo);
-            }
-            for (Message message : messages) {
-                System.out.println(message);
-            }
-        } else {
-            System.out.println("login failed!");
-        }
     }
 
     public boolean login(String email, String pass) throws IOException {
@@ -131,7 +111,7 @@ public class VkontakteAPI {
      * @param to   last entry no.
      * @param type - type of friends to return
      * @return the last element in this list
-     * @throws java.io.IOException in case of connection problems
+     * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException
      */
     public List<User> getFriends(long id, int from, int to, friendsTypes type) throws IOException, JSONException {
@@ -159,7 +139,7 @@ public class VkontakteAPI {
      * @param to   last entry no.
      * @param type - type of photos to return
      * @return the last element in this list
-     * @throws java.io.IOException in case of connection problems
+     * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException
      */
     public List<Photo> getPhotos(long id, int from, int to, photosTypes type) throws IOException, JSONException {
@@ -195,7 +175,7 @@ public class VkontakteAPI {
             } else {
                 JSONObject element = messagesArray.getJSONObject(i);
                 Object[] objects = {element.getLong("0"), element.getLong("1"), element.getJSONArray("2"), element.getJSONArray("3"), element.getJSONArray("4"), element.getInt("5")};
-                messageJson = new JSONArray(objects);
+                messageJson = new JSONArray(Arrays.asList(objects));
             }
             messages.add(new Message(messageJson, this));
         }
