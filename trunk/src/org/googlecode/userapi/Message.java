@@ -8,11 +8,11 @@ import java.util.Date;
 public class Message {
     private long id;
     private Date date;
-    String text;
-    User sender;
-    User receiver;
+    private String text;
+    private User sender;
+    private User receiver;
     boolean read;
-
+    
     public Message(JSONArray messageInfo, VkontakteAPI api) throws JSONException {
         id = messageInfo.getLong(0);
         date = new Date(1000 * messageInfo.getLong(1));
@@ -39,4 +39,33 @@ public class Message {
                 ", read=" + read +
                 '}';
     }
+
+
+    public Date getDate()
+    {
+    	return date;
+    }
+    
+    public String getText()
+    {
+    	return text;
+    }
+    
+    public User getSender()
+    {
+    	return sender;
+    }
+    
+    public User getReceiver()
+    {
+    	return receiver;
+    }
+    
+    public boolean isRead()
+    {
+    	return read;
+    }
+
 }
+
+
