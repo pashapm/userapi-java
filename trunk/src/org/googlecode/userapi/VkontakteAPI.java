@@ -226,7 +226,10 @@ public class VkontakteAPI {
         String jsonText = getTextFromUrl(url);
         System.out.println(jsonText);
         JSONObject messagesJson = new JSONObject(jsonText);
-        return new ChangesHistory(messagesJson.getLong("nm"), messagesJson.getLong("nf"), messagesJson.getLong("nph"));
+        long messagesCount = messagesJson.has("nm") ? messagesJson.getLong("nm") : 0;;
+        long friendsCount = messagesJson.has("nf") ? messagesJson.getLong("nf") : 0;
+        long photosCount = messagesJson.has("nph") ? messagesJson.getLong("nph") : 0;
+        return new ChangesHistory(messagesCount, friendsCount, photosCount);
     }
 
 //    public List<Message> getStatusMessages(long id, int from, int to) throws IOException, JSONException {
