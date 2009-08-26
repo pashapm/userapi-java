@@ -214,12 +214,26 @@ public class VkontakteAPI {
         return messages;
     }
 
+    /**
+     * Returns new messages, new friends and new photos counters as ChagesHistory
+     *
+     * @return new messages, new friends and new photos counters as ChagesHistory
+     * @throws java.io.IOException    in case of connection problems
+     * @throws org.json.JSONException
+     */
+    public ChangesHistory getChangesHistory() throws IOException, JSONException {
+        URL url = new URL("http://userapi.com/data?act=" + "history" + "&sid=" + sid);
+        String jsonText = getTextFromUrl(url);
+        System.out.println(jsonText);
+        JSONObject messagesJson = new JSONObject(jsonText);
+        return new ChangesHistory(messagesJson.getLong("nm"), messagesJson.getLong("nf"), messagesJson.getLong("nph"));
+    }
+
 //    public List<Message> getStatusMessages(long id, int from, int to) throws IOException, JSONException {
 //        List<Message> messages = new LinkedList<Message>();
 //        URL url = new URL("http://userapi.com/data?" + "activity" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
 //        String jsonText = getTextFromUrl(url);
 //        System.out.println(jsonText);
-//        todo: total count
 //        return messages;
 //    }
 

@@ -1,0 +1,48 @@
+# User API Documentation 0.9
+# [x] Authorisation
+# [x] Getting friend list for a user
+#   [x] all friends of a user
+#   [x] mutual friends with a user
+#   [x] online friends of a user
+#   [x] new friend requests to the current user
+# [x] Getting photo list for a user
+# [ ] Getting wall message list for a user
+# [ ] Getting photos comments list
+# [ ] Getting status history for a user
+# [ ] Getting list of bookmarked users
+# [ ] Getting friends' updates news
+#   [ ] Getting friends' status updates history
+#   [ ] Getting new friends of friends
+#   [ ] Getting new friends' photos
+# [x] Getting private messages
+# [ ] Getting search information
+#   [ ] Getting information about cities in a country
+#   [ ] Getting information about schools in a city
+#   [ ] Searching users by school and graduation year
+#   [ ] Searching users by name
+# [ ] Getting a user's profile information
+# [ ] Obtaining miscellaneous data with one request
+# [ ] Periodically obtaining updates history for an object
+#   [x] Getting new messages, new friends, new photos counters
+#   [ ] Getting updates history
+#   [ ] Pre-loading data
+# [ ] Error handling and content uploading
+#   [ ] "Captcha" handling (flood control)
+#   [ ] Expired session handling
+#   [ ] Registration of new users
+#   [ ] Editing user's profile
+#   [ ] Editing friends
+#   [ ] Editing bookmarks
+#   [ ] Editing education
+#   [ ] Editing photos tags
+#   [ ] Posting new messages and comments
+#     [ ] Posting private message
+#     [ ] Posting photo comment
+#     [ ] Posting wall message
+#   [ ] Removing messages and comments
+#   [ ] Undeleting messages and comments
+#   [ ] Editing Photos
+#     [ ] Uploading Photos
+#     [ ] Removing Photos
+#   [ ] Editing current status
+# [ ] Final remarks
