@@ -10,30 +10,31 @@
         <pathelement location="${basedir}/lib/json.jar"/>
     </path>
 
+    <property name="out.dir" value="bin"/>
 
     <path id="userapi-java.module.classpath">
         <path refid="library.lib.classpath"/>
     </path>
 
     <path id="userapi-java.runtime.module.classpath">
-        <pathelement location="out"/>
+        <pathelement location="${out.dir}"/>
         <path refid="library.lib.classpath"/>
     </path>
 
 
     <target name="compile">
-        <mkdir dir="out"/>
-        <javac destdir="out" srcdir="src">
+        <mkdir dir="${out.dir}"/>
+        <javac destdir="${out.dir}" srcdir="src">
             <classpath refid="library.lib.classpath"/>
         </javac>
     </target>
 
     <target name="jar" depends="compile">
-        <jar destfile="userapi-java.jar" basedir="out"/>
+        <jar destfile="userapi-java.jar" basedir="${out.dir}"/>
     </target>
 
     <target name="clean" description="cleanup module">
-        <delete dir="out"/>
+        <delete dir="${out.dir}"/>
     </target>
 
     <target name="all" depends="clean, compile, jar" description="build all"/>
