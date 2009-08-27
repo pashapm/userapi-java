@@ -21,6 +21,7 @@ public class User {
         if (length >= 3) {
             userName = userInfo.getString(1);
             userPhotoUrl = userInfo.getString(2);
+            if (userPhotoUrl.equals("0")) userPhotoUrl = null;
         }
         if (length == 4)
             online = userInfo.getInt(3) == 1;
