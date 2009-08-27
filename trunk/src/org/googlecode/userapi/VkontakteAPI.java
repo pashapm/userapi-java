@@ -250,6 +250,7 @@ public class VkontakteAPI {
 
 
     protected byte[] getFileFromUrl(String url) throws IOException {
+        if (url == null) return new byte[]{};
         HttpGet httpGet = new HttpGet(url);
         HttpResponse response = httpClient.execute(httpGet);
         HttpEntity httpEntity = response.getEntity();
