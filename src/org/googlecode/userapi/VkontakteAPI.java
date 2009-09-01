@@ -113,7 +113,6 @@ public class VkontakteAPI {
 
 
         sid = finalRequest.getURI().getFragment().substring("0;sid=".length());
-        System.out.println(sid);
         List<Cookie> cookies = httpClient.getCookieStore().getCookies();
         for (Cookie cookie : cookies) {
             if (cookie.getName().equalsIgnoreCase("remixpassword")) remixpassword = cookie.getValue();
@@ -148,16 +147,13 @@ public class VkontakteAPI {
      * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException
      */
-    public ListWithTotal<User> getFriends(long id, int from, int to, friendsTypes type) throws IOException, JSONException {
+    public List<User> getFriends(long id, int from, int to, friendsTypes type) throws IOException, JSONException {
         List<User> friends = new LinkedList<User>();
         URL url = new URL("http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
         String jsonText = getTextFromUrl(url);
-        System.out.println(jsonText);
         JSONArray fr;
-        long count = -1;
         if (type == friendsTypes.friends_new) {
             JSONObject object = new JSONObject(jsonText);
-            count = object.getLong("n");
             fr = object.getJSONArray("d");
         } else {
             fr = new JSONArray(jsonText);
@@ -166,7 +162,38 @@ public class VkontakteAPI {
             JSONArray userInfo = (JSONArray) fr.get(i);
             friends.add(new User(userInfo, this));
         }
-        return new ListWithTotal<User>(friends, count);
+        return friends;
+    }
+
+    public List<User> getFriends(long userId) throws IOException, JSONException {
+        int current = 0;
+        int fetchSize = 1024;
+        List<User> friends = new LinkedList<User>();
+        while (friends.addAll(getFriends(userId, current, current + fetchSize, friendsTypes.friends))) {
+            current += fetchSize;
+        }
+        //todo: friendsHiddenExcetion
+        return friends;
+    }
+
+    public List<User> getFriends() throws IOException, JSONException {
+        int current = 0;
+        int fetchSize = 1024;
+        List<User> friends = new LinkedList<User>();
+        while (friends.addAll(getFriends(id, current, current + fetchSize, friendsTypes.friends))) {
+            current += fetchSize;
+        }
+        return friends;
+    }
+
+    public List<User> getNewFriends() throws IOException, JSONException {
+        int current = 0;
+        int fetchSize = 1024;
+        List<User> friends = new LinkedList<User>();
+        while (friends.addAll(getFriends(-1, current, current + fetchSize, friendsTypes.friends_new))) {
+            current += fetchSize;
+        }
+        return friends;
     }
 
     /**
@@ -260,7 +287,6 @@ public class VkontakteAPI {
         System.out.println(jsonText);
         JSONObject messagesJson = new JSONObject(jsonText);
         long messagesCount = messagesJson.has("nm") ? messagesJson.getLong("nm") : 0;
-        ;
         long friendsCount = messagesJson.has("nf") ? messagesJson.getLong("nf") : 0;
         long photosCount = messagesJson.has("nph") ? messagesJson.getLong("nph") : 0;
         return new ChangesHistory(messagesCount, friendsCount, photosCount);
@@ -303,7 +329,6 @@ public class VkontakteAPI {
         String result = null;
         if (httpEntity != null) {
             result = EntityUtils.toString(httpEntity);
-            System.out.println("c-l:" + httpEntity.getContentLength());
             httpEntity.consumeContent();
         }
         return result;
