@@ -292,14 +292,33 @@ public class VkontakteAPI {
         return new ChangesHistory(messagesCount, friendsCount, photosCount);
     }
 
-//    public List<Message> getStatusMessages(long id, int from, int to) throws IOException, JSONException {
-//        List<Message> messages = new LinkedList<Message>();
-//        URL url = new URL("http://userapi.com/data?" + "activity" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
-//        String jsonText = getTextFromUrl(url);
-//        System.out.println(jsonText);
-//        return messages;
-//    }
+    private List<Status> getStatusHistory(long id, int from, int to, long ts) throws IOException, JSONException {
+        List<Status> statuses = new LinkedList<Status>();
+        URL url = new URL("http://userapi.com/data?act=" + "activity" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid + (ts == 0 ? "" : ("&ts=" + ts)));
+        String jsonText = getTextFromUrl(url);
+        System.out.println(jsonText);
+        JSONObject messagesJson = new JSONObject(jsonText);
+        JSONArray messagesArray = messagesJson.getJSONArray("d");
+        for (int i = 0; i < messagesArray.length(); i++) {
+            JSONArray messageJson = (JSONArray) messagesArray.get(i);
+            statuses.add(new Status(messageJson));
+        }
+        return statuses;
+    }
 
+    public List<Status> getStatusHistory(long id) throws IOException, JSONException {
+        String url = "http://userapi.com/data?act=" + "activity" + "&from=" + 0 + "&to=" + 0 + "&id=" + id + "&sid=" + sid;
+        JSONObject messagesJson = getJsonFromUrl(url);
+        int count = messagesJson.getInt("n");
+        return getStatusHistory(id, 0, count, 0);
+    }
+
+    public List<Status> getStatusHistory() throws IOException, JSONException {
+        String url = "http://userapi.com/data?act=" + "activity" + "&from=" + 0 + "&to=" + 0 + "&id=" + id + "&sid=" + sid;
+        JSONObject messagesJson = getJsonFromUrl(url);
+        int count = messagesJson.getInt("n");
+        return getStatusHistory(id, 0, count, 0);
+    }
 
 //    public ProfileInfo getProfile(long id) throws IOException, JSONException {
 //        URL url = new URL("http://userapi.com/data?act=" + "profile" + "&id=" + id + "&sid=" + sid);
@@ -336,6 +355,10 @@ public class VkontakteAPI {
 
     private String getTextFromUrl(URL url) throws IOException {
         return getTextFromUrl(url.toString());
+    }
+
+    private JSONObject getJsonFromUrl(String url) throws IOException, JSONException {
+        return new JSONObject(getTextFromUrl(url));
     }
 
 }
