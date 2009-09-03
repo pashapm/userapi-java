@@ -22,6 +22,15 @@ public class Status {
         text = statusJson.getString(5);
     }
 
+    public Status(long statusId, long userId, int reserved, String userName, Date date, String text) {
+        this.statusId = statusId;
+        this.userId = userId;
+        this.reserved = reserved;
+        this.userName = userName;
+        this.date = date;
+        this.text = text;
+    }
+
     public long getStatusId() {
         return statusId;
     }
