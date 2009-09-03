@@ -176,7 +176,7 @@ public class VkontakteAPI {
         return friends;
     }
 
-    public List<User> getFriends() throws IOException, JSONException {
+    public List<User> getMyFriends() throws IOException, JSONException {
         int current = 0;
         int fetchSize = 1024;
         List<User> friends = new LinkedList<User>();
@@ -186,7 +186,7 @@ public class VkontakteAPI {
         return friends;
     }
 
-    public List<User> getNewFriends() throws IOException, JSONException {
+    public List<User> getMyNewFriends() throws IOException, JSONException {
         int current = 0;
         int fetchSize = 1024;
         List<User> friends = new LinkedList<User>();
@@ -239,8 +239,7 @@ public class VkontakteAPI {
                 messageJson = (JSONArray) messagesArray.get(i);
             } else {
                 JSONObject element = messagesArray.getJSONObject(i);
-                Object[] objects = {element.getLong("0"), element.getLong("1"), element.getJSONArray("2"), element.getJSONArray("3"), element.getJSONArray("4"), element.getInt("5")};
-                messageJson = new JSONArray(Arrays.asList(objects));
+                messageJson = JSONHelper.objectToArray(element);
             }
             messages.add(new Message(messageJson, this));
         }
@@ -313,19 +312,22 @@ public class VkontakteAPI {
         return getStatusHistory(id, 0, count, 0);
     }
 
-    public List<Status> getStatusHistory() throws IOException, JSONException {
+    public List<Status> getMyStatusHistory() throws IOException, JSONException {
         String url = "http://userapi.com/data?act=" + "activity" + "&from=" + 0 + "&to=" + 0 + "&id=" + id + "&sid=" + sid;
         JSONObject messagesJson = getJsonFromUrl(url);
         int count = messagesJson.getInt("n");
         return getStatusHistory(id, 0, count, 0);
     }
 
-//    public ProfileInfo getProfile(long id) throws IOException, JSONException {
-//        URL url = new URL("http://userapi.com/data?act=" + "profile" + "&id=" + id + "&sid=" + sid);
-//        String jsonText = getTextFromUrl(url);
-//        System.out.println(jsonText);
-//        return new ProfileInfo();
-//    }
+    public ProfileInfo getProfile(long id) throws IOException, JSONException {
+        String url = "http://userapi.com/data?act=" + "profile" + "&id=" + id + "&sid=" + sid;
+        JSONObject jsonText = getJsonFromUrl(url);
+        return new ProfileInfo(jsonText);
+    }
+
+    public ProfileInfo getMyProfile() throws IOException, JSONException {
+        return getProfile(id);
+    }
 
 
     protected byte[] getFileFromUrl(String url) throws IOException {
@@ -350,6 +352,7 @@ public class VkontakteAPI {
             result = EntityUtils.toString(httpEntity);
             httpEntity.consumeContent();
         }
+        System.out.println(result);
         return result;
     }
 
