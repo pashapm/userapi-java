@@ -1,42 +1,37 @@
 package org.googlecode.userapi;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpHost;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.params.ConnManagerParams;
-import org.apache.http.conn.params.ConnPerRouteBean;
+import org.apache.http.*;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.ClientPNames;
-import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.cookie.*;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.entity.HttpEntityWrapper;
 import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.impl.cookie.BrowserCompatSpec;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.HttpParams;
+import org.apache.http.impl.cookie.BrowserCompatSpec;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Arrays;
+import java.util.zip.GZIPInputStream;
 
 public class VkontakteAPI {
     String login;
@@ -62,41 +57,18 @@ public class VkontakteAPI {
     public VkontakteAPI() {
         sid = null;
         remixpassword = null;
-        CookieSpecFactory acceptAllFactory = new CookieSpecFactory() {
-            public CookieSpec newInstance(HttpParams params) {
-                return new BrowserCompatSpec() {
-                    public void validate(Cookie cookie, CookieOrigin origin)
-                            throws MalformedCookieException {
-                        //all cookies are accepted
-                    }
-                };
-            }
-        };
-
 
         HttpParams params = new BasicHttpParams();
-// Increase max total connection to 200
-//        ConnManagerParams.setMaxTotalConnections(params, 200);
-// Increase default max connection per route to 20
-//        ConnPerRouteBean connPerRoute = new ConnPerRouteBean(20);
-// Increase max connections for localhost:80 to 50
-//        HttpHost localhost = new HttpHost("locahost", 80);
-//        connPerRoute.setMaxForRoute(new HttpRoute(localhost), 50);
-//        ConnManagerParams.setMaxConnectionsPerRoute(params, connPerRoute);
-
         SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register(
-                new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        schemeRegistry.register(
-                new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
         ClientConnectionManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
         httpClient = new DefaultHttpClient(cm, params);
-        httpClient.getCookieSpecs().register("accept_all", acceptAllFactory);
-        httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, "accept_all");
-        httpClient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
-
-
+//        httpClient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
+        HttpClientHelper.setAcceptAllCookies(httpClient);
+        HttpClientHelper.addGzipCompression(httpClient);
     }
+
 
     public boolean login(String email, String pass) throws IOException {
         String urlString = "http://login.userapi.com/auth?login=force&site=" + SITE_ID + "&email=" + email + "&pass=" + pass;
@@ -352,7 +324,7 @@ public class VkontakteAPI {
             result = EntityUtils.toString(httpEntity);
             httpEntity.consumeContent();
         }
-        System.out.println(result);
+//        System.out.println(result);
         return result;
     }
 
