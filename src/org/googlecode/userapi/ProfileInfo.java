@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
+import java.util.Calendar;
 
 public class ProfileInfo {
     private long id;
@@ -12,8 +13,9 @@ public class ProfileInfo {
     private String maidenName;
     private Status status;
     private String photo;
-//    private int sex;
-//    private Date birthday;
+    private int sex;
+    private Date birthday;
+    private String phone;
 
     public ProfileInfo(JSONObject profileJson) throws JSONException {
         id = profileJson.getLong("id");
@@ -23,6 +25,16 @@ public class ProfileInfo {
         JSONObject element = profileJson.getJSONObject("actv");
         status = new Status(JSONHelper.objectToArray(element));
         photo = profileJson.getString("bp");
+        sex = profileJson.getInt("sx");
+        int bd = profileJson.getInt("bd");
+        int bm = profileJson.getInt("bm");
+        int by = profileJson.getInt("by");
+        if (bd != 0 && bm != 0 && by != 0) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(by, bm - 1, bd, 0, 0, 0);
+            birthday = calendar.getTime();
+        }
+        phone = profileJson.getString("mo");
     }
 
     @Override
@@ -34,6 +46,9 @@ public class ProfileInfo {
                 ", maidenName='" + maidenName + '\'' +
                 ", status=" + status +
                 ", photo='" + photo + '\'' +
+                ", sex=" + sex +
+                ", birthday=" + birthday +
+                ", phone='" + phone + '\'' +
                 '}';
     }
 }
