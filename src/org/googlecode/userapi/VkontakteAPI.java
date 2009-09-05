@@ -25,10 +25,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sun.xml.internal.ws.resources.SenderMessages;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -270,6 +274,30 @@ public class VkontakteAPI {
             messages.add(new Message(messageJson, this));
         }
         return messages;
+    }
+    
+    /**
+     * This class send message to user
+     * @param sendingMessage - incapsulated request parameters
+     * @return error code
+     * @throws IOException
+     */
+    public int sendMessageToUser(Message sendingMessage) 
+    	throws IOException{
+    	
+    	URL url = new URL("http://userapi.com/data?act=add_message" + 
+    			"&id=" + sendingMessage.getId() + 
+    			"&ts=" + sendingMessage.getDate().getTime() + 
+    			"message=" + sendingMessage.getText() + "&sid=" + sid);
+    	
+    	System.out.println("URI: " + url.toString());
+    	
+    	String getTextFromURL = getTextFromUrl( url );
+    	
+    	System.out.println( "Result = " + getTextFromURL );
+    	
+    	// TODO: now it for test
+    	return 0;
     }
 
     /**
