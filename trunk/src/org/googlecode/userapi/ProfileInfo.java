@@ -37,6 +37,42 @@ public class ProfileInfo {
         phone = profileJson.getString("mo");
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public String getMaidenName() {
+        return maidenName;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public int getSex() {
+        return sex;
+    }
+
+    public Date getBirthday() {
+        return birthday;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
     @Override
     public String toString() {
         return "ProfileInfo{" +
