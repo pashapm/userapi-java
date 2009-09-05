@@ -64,7 +64,7 @@ public class VkontakteAPI {
         schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
         ClientConnectionManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
         httpClient = new DefaultHttpClient(cm, params);
-//        httpClient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
+        httpClient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
         HttpClientHelper.setAcceptAllCookies(httpClient);
         HttpClientHelper.addGzipCompression(httpClient);
     }
@@ -94,18 +94,43 @@ public class VkontakteAPI {
     }
 
     public boolean login(String remixpasswordCookie) throws IOException {
-        URL url = new URL("http://login.userapi.com/auth?​login=auto&site=2");
-        URLConnection connection = url.openConnection();
-        connection.setRequestProperty("Cookie", "remixpassword=" + remixpasswordCookie);
-        connection.getContent();
-        sid = connection.getURL().getRef().substring("0;sid=".length());
-        return !sid.equalsIgnoreCase("-1");
+//        String urlString = "http://login.userapi.com/auth?login=auto&site=" + SITE_ID;
+//        HttpGet get = new HttpGet(urlString);
+//        get.addHeader("Cookie", "remixpassword=" + remixpasswordCookie);
+//        HttpContext context = new BasicHttpContext();
+//        HttpResponse response = httpClient.execute(get, context);
+//        HttpEntity httpEntity = response.getEntity();
+//        if (httpEntity != null) {
+//            httpEntity.consumeContent();
+//        }
+//        HttpUriRequest finalRequest = (HttpUriRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
+//        sid = finalRequest.getURI().getFragment().substring("0;sid=".length());
+
+//        URL url = new URL("http://login.userapi.com/auth?​login=auto&site=2");
+//        URLConnection connection = url.openConnection();
+//        connection.setRequestProperty("Cookie", "remixpassword=" + remixpasswordCookie);
+//        connection.getContent();
+//        sid = connection.getURL().getRef().substring("0;sid=".length());
+//        return !sid.equalsIgnoreCase("-1");
+        return false;
     }
 
     public void logout() throws IOException {
         URL url = new URL("http://login.userapi.com/auth?login=logout&site=2&sid=" + sid);
         URLConnection connection = url.openConnection();
         connection.getContent();
+    }
+
+    public String getRemixpassword() {
+        return remixpassword;
+    }
+
+    public String getSid() {
+        return sid;
+    }
+
+    public void setSid(String sid) {
+        this.sid = sid;
     }
 
     /**
@@ -204,6 +229,8 @@ public class VkontakteAPI {
         JSONObject messagesJson = new JSONObject(jsonText);
         Long count = messagesJson.getLong("n");
         Long history = messagesJson.getLong("h");
+        System.out.println("count:" + count);
+        System.out.println("history:" + history);
         JSONArray messagesArray = messagesJson.getJSONArray("d");
         for (int i = 0; i < messagesArray.length(); i++) {
             JSONArray messageJson;

@@ -12,7 +12,7 @@ public class Message {
     private User sender;
     private User receiver;
     boolean read;
-    
+
     public Message(JSONArray messageInfo, VkontakteAPI api) throws JSONException {
         id = messageInfo.getLong(0);
         date = new Date(1000 * messageInfo.getLong(1));
@@ -20,7 +20,7 @@ public class Message {
         text = textJsonArray.getString(0);
         if (textJsonArray.length() > 1) {
 //            System.out.println(textJsonArray);
-            //todo: handle
+            //todo: handle if any?
         }
         sender = new User(messageInfo.getJSONArray(3), api);
         receiver = new User(messageInfo.getJSONArray(4), api);
@@ -40,30 +40,24 @@ public class Message {
                 '}';
     }
 
+    public Date getDate() {
+        return date;
+    }
 
-    public Date getDate()
-    {
-    	return date;
+    public String getText() {
+        return text;
     }
-    
-    public String getText()
-    {
-    	return text;
+
+    public User getSender() {
+        return sender;
     }
-    
-    public User getSender()
-    {
-    	return sender;
+
+    public User getReceiver() {
+        return receiver;
     }
-    
-    public User getReceiver()
-    {
-    	return receiver;
-    }
-    
-    public boolean isRead()
-    {
-    	return read;
+
+    public boolean isRead() {
+        return read;
     }
 
 }
