@@ -6,12 +6,12 @@ import org.json.JSONException;
 import java.util.Date;
 
 public class Message {
-    private long id;
-    private Date date;
-    private String text;
-    private User sender;
-    private User receiver;
-    boolean read;
+    protected long id;
+    protected Date date;
+    protected String text;
+    protected User sender;
+    protected User receiver;
+    protected boolean read;
 
     public Message(JSONArray messageInfo, VkontakteAPI api) throws JSONException {
         id = messageInfo.getLong(0);
@@ -28,6 +28,9 @@ public class Message {
             read = messageInfo.getInt(5) == 1;
     }
 
+    public Message() {
+    }
+
     @Override
     public String toString() {
         return "Message{" +
@@ -38,6 +41,10 @@ public class Message {
                 ", receiver=" + receiver +
                 ", read=" + read +
                 '}';
+    }
+
+    public long getId() {
+        return id;
     }
 
     public Date getDate() {
