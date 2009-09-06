@@ -53,6 +53,10 @@ public class VkontakteAPI {
         message, inbox, outbox
     }
 
+    public AbstractHttpClient getHttpClient() {
+        return httpClient;
+    }
+
     public VkontakteAPI() {
         sid = null;
         remixpassword = null;
