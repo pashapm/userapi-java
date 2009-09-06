@@ -1,6 +1,15 @@
 package org.googlecode.userapi;
 
-import org.apache.http.*;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.ClientPNames;
@@ -9,12 +18,10 @@ import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.cookie.*;
-import org.apache.http.entity.HttpEntityWrapper;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.impl.cookie.BrowserCompatSpec;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
@@ -24,18 +31,6 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.sun.xml.internal.ws.resources.SenderMessages;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 public class VkontakteAPI {
     String login;
@@ -282,22 +277,17 @@ public class VkontakteAPI {
      * @return error code
      * @throws IOException
      */
-    public int sendMessageToUser(Message sendingMessage) 
+    public String sendMessageToUser(Message sendingMessage) 
     	throws IOException{
-    	
+    	if ((sendingMessage == null) || (sendingMessage.getText() == null)) {
+    		throw new DataException("Null message to send");
+    	}
     	URL url = new URL("http://userapi.com/data?act=add_message" + 
     			"&id=" + sendingMessage.getId() + 
     			"&ts=" + sendingMessage.getDate().getTime() + 
-    			"message=" + sendingMessage.getText() + "&sid=" + sid);
+    			"&message=" + URLEncoder.encode(sendingMessage.getText(), "UTF-8") + "&sid=" + sid);
     	
-    	System.out.println("URI: " + url.toString());
-    	
-    	String getTextFromURL = getTextFromUrl( url );
-    	
-    	System.out.println( "Result = " + getTextFromURL );
-    	
-    	// TODO: now it for test
-    	return 0;
+    	return getTextFromUrl( url );
     }
 
     /**
@@ -390,5 +380,6 @@ public class VkontakteAPI {
     private JSONObject getJsonFromUrl(String url) throws IOException, JSONException {
         return new JSONObject(getTextFromUrl(url));
     }
-
+    
+    
 }
