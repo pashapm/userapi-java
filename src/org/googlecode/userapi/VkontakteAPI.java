@@ -82,7 +82,6 @@ public class VkontakteAPI {
 
         HttpUriRequest finalRequest = (HttpUriRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
 
-
         sid = finalRequest.getURI().getFragment().substring("0;sid=".length());
         List<Cookie> cookies = httpClient.getCookieStore().getCookies();
         for (Cookie cookie : cookies) {
@@ -283,7 +282,7 @@ public class VkontakteAPI {
     		throw new DataException("Null message to send");
     	}
     	URL url = new URL("http://userapi.com/data?act=add_message" + 
-    			"&id=" + sendingMessage.getId() + 
+    			"&id=" + sendingMessage.getReceiverId() + 
     			"&ts=" + sendingMessage.getDate().getTime() + 
     			"&message=" + URLEncoder.encode(sendingMessage.getText(), "UTF-8") + "&sid=" + sid);
     	
@@ -380,6 +379,4 @@ public class VkontakteAPI {
     private JSONObject getJsonFromUrl(String url) throws IOException, JSONException {
         return new JSONObject(getTextFromUrl(url));
     }
-    
-    
 }
