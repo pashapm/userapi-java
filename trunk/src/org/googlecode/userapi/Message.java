@@ -11,6 +11,7 @@ public class Message {
     protected String text;
     protected User sender;
     protected User receiver;
+    protected long receiverId;
     protected boolean read;
 
     public Message(JSONArray messageInfo, VkontakteAPI api) throws JSONException {
@@ -41,6 +42,14 @@ public class Message {
                 ", receiver=" + receiver +
                 ", read=" + read +
                 '}';
+    }
+
+    public long getReceiverId() {
+        return receiverId;
+    }
+
+    public void setReceiverId(long receiverId) {
+        this.receiverId = receiverId;
     }
 
     public long getId() {
