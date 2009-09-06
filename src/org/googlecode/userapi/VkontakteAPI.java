@@ -244,6 +244,14 @@ public class VkontakteAPI {
         return messages;
     }
 
+    public List<Message> getInbox(int from, int to) throws IOException, JSONException {
+        return getPrivateMessages(id, from, to, privateMessagesTypes.inbox);
+    }
+
+    public List<Message> getOutbox(int from, int to) throws IOException, JSONException {
+        return getPrivateMessages(id, from, to, privateMessagesTypes.outbox);
+    }
+
     /**
      * Returns wall messages list for a user
      *
@@ -269,24 +277,25 @@ public class VkontakteAPI {
         }
         return messages;
     }
-    
+
     /**
      * This class send message to user
+     *
      * @param sendingMessage - incapsulated request parameters
      * @return error code
      * @throws IOException
      */
-    public String sendMessageToUser(Message sendingMessage) 
-    	throws IOException{
-    	if ((sendingMessage == null) || (sendingMessage.getText() == null)) {
-    		throw new DataException("Null message to send");
-    	}
-    	URL url = new URL("http://userapi.com/data?act=add_message" + 
-    			"&id=" + sendingMessage.getReceiverId() + 
-    			"&ts=" + sendingMessage.getDate().getTime() + 
-    			"&message=" + URLEncoder.encode(sendingMessage.getText(), "UTF-8") + "&sid=" + sid);
-    	
-    	return getTextFromUrl( url );
+    public String sendMessageToUser(Message sendingMessage)
+            throws IOException {
+        if ((sendingMessage == null) || (sendingMessage.getText() == null)) {
+            throw new DataException("Null message to send");
+        }
+        URL url = new URL("http://userapi.com/data?act=add_message" +
+                "&id=" + sendingMessage.getReceiverId() +
+                "&ts=" + sendingMessage.getDate().getTime() +
+                "&message=" + URLEncoder.encode(sendingMessage.getText(), "UTF-8") + "&sid=" + sid);
+
+        return getTextFromUrl(url);
     }
 
     /**
@@ -368,7 +377,7 @@ public class VkontakteAPI {
             result = EntityUtils.toString(httpEntity);
             httpEntity.consumeContent();
         }
-//        System.out.println(result);
+        System.out.println(result);
         return result;
     }
 
