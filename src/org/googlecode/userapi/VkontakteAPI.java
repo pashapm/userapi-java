@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -39,7 +40,13 @@ public class VkontakteAPI {
 
     private String remixpassword;
     private AbstractHttpClient httpClient;
-    private static final int SITE_ID = 2;
+    private static final int SITE_ID = 4128;
+    private static final String CAPTCHA_REQUIRED = "{\"ok\":-2}";
+    private CaptchaHandler captchaHandler;
+
+    public void setCaptchaHandler(CaptchaHandler captchaHandler) {
+        this.captchaHandler = captchaHandler;
+    }
 
     public enum friendsTypes {
         friends, friends_mutual, friends_online, friends_new
@@ -148,7 +155,7 @@ public class VkontakteAPI {
      */
     public List<User> getFriends(long id, int from, int to, friendsTypes type) throws IOException, JSONException {
         List<User> friends = new LinkedList<User>();
-        URL url = new URL("http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
+        String url = "http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid;
         String jsonText = getTextFromUrl(url);
         JSONArray fr;
         if (type == friendsTypes.friends_new) {
@@ -179,9 +186,12 @@ public class VkontakteAPI {
         int current = 0;
         int fetchSize = 1024;
         List<User> friends = new LinkedList<User>();
-        while (friends.addAll(getFriends(id, current, current + fetchSize, friendsTypes.friends))) {
+        List<User> tmp;
+        do {
+            tmp = getFriends(id, current, current + fetchSize, friendsTypes.friends);
+            friends.addAll(tmp);
             current += fetchSize;
-        }
+        } while (tmp.size() == fetchSize);
         return friends;
     }
 
@@ -210,7 +220,6 @@ public class VkontakteAPI {
         List<Photo> photos = new LinkedList<Photo>();
         URL url = new URL("http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
         String jsonText = getTextFromUrl(url);
-        System.out.println(jsonText);
         JSONArray photosJson;
         if (type == photosTypes.photos) {
             photosJson = new JSONArray(jsonText);
@@ -229,9 +238,9 @@ public class VkontakteAPI {
         URL url = new URL("http://userapi.com/data?act=" + type + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
         String jsonText = getTextFromUrl(url);
         JSONObject messagesJson = new JSONObject(jsonText);
-        Long count = messagesJson.getLong("n");
+//        Long count = messagesJson.getLong("n");
         Long history = messagesJson.getLong("h");
-        System.out.println("count:" + count);
+//        System.out.println("count:" + count);
         System.out.println("history:" + history);
         JSONArray messagesArray = messagesJson.getJSONArray("d");
         for (int i = 0; i < messagesArray.length(); i++) {
@@ -270,7 +279,6 @@ public class VkontakteAPI {
         List<Message> messages = new LinkedList<Message>();
         URL url = new URL("http://userapi.com/data?act=" + "wall" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
         String jsonText = getTextFromUrl(url);
-        System.out.println(jsonText);
         JSONObject messagesJson = new JSONObject(jsonText);
         Long count = messagesJson.getLong("n");
         Long history = messagesJson.getLong("h");
@@ -304,15 +312,15 @@ public class VkontakteAPI {
 
     /**
      * Returns new messages, new friends and new photos counters as ChagesHistory
+     * Unlimited calls(captcha not required)
      *
      * @return new messages, new friends and new photos counters as ChagesHistory
      * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException
      */
     public ChangesHistory getChangesHistory() throws IOException, JSONException {
-        URL url = new URL("http://userapi.com/data?act=" + "history" + "&sid=" + sid);
+        String url = "http://userapi.com/data?act=" + "history" + "&sid=" + sid;
         String jsonText = getTextFromUrl(url);
-        System.out.println(jsonText);
         JSONObject messagesJson = new JSONObject(jsonText);
         long messagesCount = messagesJson.has("nm") ? messagesJson.getLong("nm") : 0;
         long friendsCount = messagesJson.has("nf") ? messagesJson.getLong("nf") : 0;
@@ -324,7 +332,6 @@ public class VkontakteAPI {
         List<Status> statuses = new LinkedList<Status>();
         URL url = new URL("http://userapi.com/data?act=" + "activity" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid + (ts == 0 ? "" : ("&ts=" + ts)));
         String jsonText = getTextFromUrl(url);
-        System.out.println(jsonText);
         JSONObject messagesJson = new JSONObject(jsonText);
         JSONArray messagesArray = messagesJson.getJSONArray("d");
         for (int i = 0; i < messagesArray.length(); i++) {
@@ -381,8 +388,18 @@ public class VkontakteAPI {
             result = EntityUtils.toString(httpEntity);
             httpEntity.consumeContent();
         }
-        System.out.println(result);
-        return result;
+        System.out.println("'" + result + "'");
+        if (result.equals(CAPTCHA_REQUIRED)) {
+            System.out.println("captcha required!");
+            return doWothCaptcha(url);
+        } else return result;
+    }
+
+    private String doWothCaptcha(String url) throws IOException {
+        String captcha_sid = String.valueOf(Math.abs(new Random().nextLong()));
+        String captcha_url = "http://userapi.com/data?act=captcha&csid=" + captcha_sid;
+        String captcha_code = captchaHandler.handleCaptcha(captcha_url);
+        return getTextFromUrl(url + "&fcsid=" + captcha_sid + "&fccode=" + captcha_code);
     }
 
     private String getTextFromUrl(URL url) throws IOException {
