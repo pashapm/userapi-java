@@ -1,18 +1,8 @@
 package org.googlecode.userapi;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
@@ -25,24 +15,28 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.ExecutionContext;
-import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+
 public class VkontakteAPI {
-    String login;
-    String sid;
     public long id;
 
-    private String remixpassword;
     private AbstractHttpClient httpClient;
-    private static final int SITE_ID = 4128;
+    //    private static final int SITE_ID = 4128;
+    private static final int SITE_ID = 2;
     private static final String CAPTCHA_REQUIRED = "{\"ok\":-2}";
+    private static final String SESSION_EXPIRED = "{\"ok\":-1}";
     private CaptchaHandler captchaHandler;
+    private Credentials credentials;
 
     public void setCaptchaHandler(CaptchaHandler captchaHandler) {
         this.captchaHandler = captchaHandler;
@@ -65,81 +59,67 @@ public class VkontakteAPI {
     }
 
     public VkontakteAPI() {
-        sid = null;
-        remixpassword = null;
-
         HttpParams params = new BasicHttpParams();
         SchemeRegistry schemeRegistry = new SchemeRegistry();
         schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
         schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
         ClientConnectionManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
         httpClient = new DefaultHttpClient(cm, params);
-        httpClient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
+        httpClient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
         HttpClientHelper.setAcceptAllCookies(httpClient);
         HttpClientHelper.addGzipCompression(httpClient);
     }
 
+    public boolean login(Credentials credentials) throws IOException {
+        this.credentials = credentials;
+        if (credentials.getSession() != null) {
+            boolean b = loginWithSid();
+            System.out.println("login with sid success? " + b);
+            return b;
+        } else if (credentials.getRemixpass() != null) {
+            boolean b = loginWithRemix();
+            System.out.println("login with remix success? " + b);
+            return b;
+        } else return loginWithPass();
+    }
 
-    public boolean login(String email, String pass) throws IOException {
-        String urlString = "http://login.userapi.com/auth?login=force&site=" + SITE_ID + "&email=" + email + "&pass=" + pass;
+    private boolean loginWithSid() throws IOException {
+        String url = "http://userapi.com/data?act=" + "history" + "&sid=" + credentials.getSession();
+        return !getTextFromUrl(url).equals(SESSION_EXPIRED);
+    }
+
+    public boolean loginWithPass() throws IOException {
+        String urlString = "http://login.userapi.com/auth?login=force&site=" + SITE_ID + "&email=" + credentials.getLogin() + "&pass=" + credentials.getLogin();
         HttpGet get = new HttpGet(urlString);
-        HttpContext context = new BasicHttpContext();
-        HttpResponse response = httpClient.execute(get, context);
-
-        HttpEntity httpEntity = response.getEntity();
-        if (httpEntity != null) {
-            httpEntity.consumeContent();
-        }
-
-        HttpUriRequest finalRequest = (HttpUriRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
-
-        sid = finalRequest.getURI().getFragment().substring("0;sid=".length());
+        HttpResponse response = httpClient.execute(get);
+        String location = response.getFirstHeader("Location").getValue();
+        String sid = location.substring(location.indexOf("0;sid=") + "0;sid=".length());
         List<Cookie> cookies = httpClient.getCookieStore().getCookies();
+        String remixpassword = null;
         for (Cookie cookie : cookies) {
             if (cookie.getName().equalsIgnoreCase("remixpassword")) remixpassword = cookie.getValue();
             if (cookie.getName().equalsIgnoreCase("remixmid")) id = Long.parseLong(cookie.getValue());
         }
+        credentials.setSession(sid);
+        credentials.setRemixpass(remixpassword);
         return remixpassword != null;
     }
 
-    public boolean login(String remixpasswordCookie) throws IOException {
-//        String urlString = "http://login.userapi.com/auth?login=auto&site=" + SITE_ID;
-//        HttpGet get = new HttpGet(urlString);
-//        get.addHeader("Cookie", "remixpassword=" + remixpasswordCookie);
-//        HttpContext context = new BasicHttpContext();
-//        HttpResponse response = httpClient.execute(get, context);
-//        HttpEntity httpEntity = response.getEntity();
-//        if (httpEntity != null) {
-//            httpEntity.consumeContent();
-//        }
-//        HttpUriRequest finalRequest = (HttpUriRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
-//        sid = finalRequest.getURI().getFragment().substring("0;sid=".length());
-
-//        URL url = new URL("http://login.userapi.com/auth?​login=auto&site=2");
-//        URLConnection connection = url.openConnection();
-//        connection.setRequestProperty("Cookie", "remixpassword=" + remixpasswordCookie);
-//        connection.getContent();
-//        sid = connection.getURL().getRef().substring("0;sid=".length());
-//        return !sid.equalsIgnoreCase("-1");
+    public boolean loginWithRemix() throws IOException {
+        String urlString = "http://login.userapi.com/auth?login=auto&site=" + SITE_ID;
+        HttpGet get = new HttpGet(urlString);
+        get.addHeader("Cookie", "remixpassword=" + credentials.getRemixpass());
+        HttpResponse response = httpClient.execute(get);
+        String location = response.getFirstHeader("Location").getValue();
+        String sid = location.substring(location.indexOf("0;sid=") + "0;sid=".length());
+        credentials.setSession(sid);
         return false;
     }
 
     public void logout() throws IOException {
-        URL url = new URL("http://login.userapi.com/auth?login=logout&site=2&sid=" + sid);
-        URLConnection connection = url.openConnection();
-        connection.getContent();
-    }
-
-    public String getRemixpassword() {
-        return remixpassword;
-    }
-
-    public String getSid() {
-        return sid;
-    }
-
-    public void setSid(String sid) {
-        this.sid = sid;
+        String urlString = "http://login.userapi.com/auth?login=logout&site=" + SITE_ID + "&sid=" + credentials.getSession();
+        HttpGet get = new HttpGet(urlString);
+        HttpResponse response = httpClient.execute(get);
     }
 
     /**
@@ -155,7 +135,7 @@ public class VkontakteAPI {
      */
     public List<User> getFriends(long id, int from, int to, friendsTypes type) throws IOException, JSONException {
         List<User> friends = new LinkedList<User>();
-        String url = "http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid;
+        String url = "http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession();
         String jsonText = getTextFromUrl(url);
         JSONArray fr;
         if (type == friendsTypes.friends_new) {
@@ -218,7 +198,7 @@ public class VkontakteAPI {
      */
     public List<Photo> getPhotos(long id, int from, int to, photosTypes type) throws IOException, JSONException {
         List<Photo> photos = new LinkedList<Photo>();
-        URL url = new URL("http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
+        URL url = new URL("http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession());
         String jsonText = getTextFromUrl(url);
         JSONArray photosJson;
         if (type == photosTypes.photos) {
@@ -235,7 +215,7 @@ public class VkontakteAPI {
 
     public List<Message> getPrivateMessages(long id, int from, int to, privateMessagesTypes type) throws IOException, JSONException {
         List<Message> messages = new LinkedList<Message>();
-        URL url = new URL("http://userapi.com/data?act=" + type + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
+        URL url = new URL("http://userapi.com/data?act=" + type + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession());
         String jsonText = getTextFromUrl(url);
         JSONObject messagesJson = new JSONObject(jsonText);
 //        Long count = messagesJson.getLong("n");
@@ -277,7 +257,7 @@ public class VkontakteAPI {
      */
     public List<Message> getWallMessages(long id, int from, int to) throws IOException, JSONException {
         List<Message> messages = new LinkedList<Message>();
-        URL url = new URL("http://userapi.com/data?act=" + "wall" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid);
+        URL url = new URL("http://userapi.com/data?act=" + "wall" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession());
         String jsonText = getTextFromUrl(url);
         JSONObject messagesJson = new JSONObject(jsonText);
         Long count = messagesJson.getLong("n");
@@ -305,7 +285,7 @@ public class VkontakteAPI {
         URL url = new URL("http://userapi.com/data?act=add_message" +
                 "&id=" + sendingMessage.getReceiverId() +
                 "&ts=" + sendingMessage.getDate().getTime() +
-                "&message=" + URLEncoder.encode(sendingMessage.getText(), "UTF-8") + "&sid=" + sid);
+                "&message=" + URLEncoder.encode(sendingMessage.getText(), "UTF-8") + "&sid=" + credentials.getSession());
 
         return getTextFromUrl(url);
     }
@@ -319,7 +299,7 @@ public class VkontakteAPI {
      * @throws org.json.JSONException
      */
     public ChangesHistory getChangesHistory() throws IOException, JSONException {
-        String url = "http://userapi.com/data?act=" + "history" + "&sid=" + sid;
+        String url = "http://userapi.com/data?act=" + "history" + "&sid=" + credentials.getSession();
         String jsonText = getTextFromUrl(url);
         JSONObject messagesJson = new JSONObject(jsonText);
         long messagesCount = messagesJson.has("nm") ? messagesJson.getLong("nm") : 0;
@@ -330,7 +310,7 @@ public class VkontakteAPI {
 
     private List<Status> getStatusHistory(long id, int from, int to, long ts) throws IOException, JSONException {
         List<Status> statuses = new LinkedList<Status>();
-        URL url = new URL("http://userapi.com/data?act=" + "activity" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + sid + (ts == 0 ? "" : ("&ts=" + ts)));
+        URL url = new URL("http://userapi.com/data?act=" + "activity" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession() + (ts == 0 ? "" : ("&ts=" + ts)));
         String jsonText = getTextFromUrl(url);
         JSONObject messagesJson = new JSONObject(jsonText);
         JSONArray messagesArray = messagesJson.getJSONArray("d");
@@ -342,21 +322,21 @@ public class VkontakteAPI {
     }
 
     public List<Status> getStatusHistory(long id) throws IOException, JSONException {
-        String url = "http://userapi.com/data?act=" + "activity" + "&from=" + 0 + "&to=" + 0 + "&id=" + id + "&sid=" + sid;
+        String url = "http://userapi.com/data?act=" + "activity" + "&from=" + 0 + "&to=" + 0 + "&id=" + id + "&sid=" + credentials.getSession();
         JSONObject messagesJson = getJsonFromUrl(url);
         int count = messagesJson.getInt("n");
         return getStatusHistory(id, 0, count, 0);
     }
 
     public List<Status> getMyStatusHistory() throws IOException, JSONException {
-        String url = "http://userapi.com/data?act=" + "activity" + "&from=" + 0 + "&to=" + 0 + "&id=" + id + "&sid=" + sid;
+        String url = "http://userapi.com/data?act=" + "activity" + "&from=" + 0 + "&to=" + 0 + "&id=" + id + "&sid=" + credentials.getSession();
         JSONObject messagesJson = getJsonFromUrl(url);
         int count = messagesJson.getInt("n");
         return getStatusHistory(id, 0, count, 0);
     }
 
     public ProfileInfo getProfile(long id) throws IOException, JSONException {
-        String url = "http://userapi.com/data?act=" + "profile" + "&id=" + id + "&sid=" + sid;
+        String url = "http://userapi.com/data?act=" + "profile" + "&id=" + id + "&sid=" + credentials.getSession();
         JSONObject jsonText = getJsonFromUrl(url);
         return new ProfileInfo(jsonText);
     }
@@ -388,11 +368,16 @@ public class VkontakteAPI {
             result = EntityUtils.toString(httpEntity);
             httpEntity.consumeContent();
         }
-        System.out.println("'" + result + "'");
-        if (result.equals(CAPTCHA_REQUIRED)) {
+        if (result.equals(SESSION_EXPIRED)) {
+            System.out.println("session expired!");
+            credentials.setSession(null);
+            login(credentials);
+            return doWothCaptcha(url);
+        } else if (result.equals(CAPTCHA_REQUIRED)) {
             System.out.println("captcha required!");
             return doWothCaptcha(url);
-        } else return result;
+        }
+        return result;
     }
 
     private String doWothCaptcha(String url) throws IOException {
