@@ -89,7 +89,7 @@ public class VkontakteAPI {
     }
 
     public boolean loginWithPass() throws IOException {
-        String urlString = "http://login.userapi.com/auth?login=force&site=" + SITE_ID + "&email=" + credentials.getLogin() + "&pass=" + credentials.getLogin();
+        String urlString = "http://login.userapi.com/auth?login=force&site=" + SITE_ID + "&email=" + credentials.getLogin() + "&pass=" + credentials.getPass();
         HttpGet get = new HttpGet(urlString);
         HttpResponse response = httpClient.execute(get);
         String location = response.getFirstHeader("Location").getValue();
@@ -103,7 +103,7 @@ public class VkontakteAPI {
         credentials.setSession(sid);
         credentials.setRemixpass(remixpassword);
         return remixpassword != null;
-    }
+    } 
 
     public boolean loginWithRemix() throws IOException {
         String urlString = "http://login.userapi.com/auth?login=auto&site=" + SITE_ID;
@@ -122,6 +122,9 @@ public class VkontakteAPI {
         HttpResponse response = httpClient.execute(get);
     }
 
+    public Credentials getCred() {
+    	return credentials;
+    }
     /**
      * Returns friend list for a user
      *
