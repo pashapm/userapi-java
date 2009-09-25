@@ -7,7 +7,9 @@ public class Credentials {
     private String session;
 
     public Credentials(String login, String pass, String remixpass, String session) {
-        if (login==null || pass==null) throw new IllegalArgumentException("login/pass must not be null");
+        //if (login==null || pass==null) throw new IllegalArgumentException("login/pass must not be null");
+    	//why? only Sid?
+    	
         this.login = login;
         this.pass = pass;
         this.remixpass = remixpass;
