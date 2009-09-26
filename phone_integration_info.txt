@@ -1,0 +1,5 @@
+My(Ildar) vkontakte tests
+    friends:                134
+    with full real phones:  66(50%)
+    getProfile() delay:     400
+    total time:             82 seconds        
