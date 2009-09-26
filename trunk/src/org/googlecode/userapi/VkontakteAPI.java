@@ -80,7 +80,11 @@ public class VkontakteAPI {
             boolean b = loginWithRemix();
             System.out.println("login with remix success? " + b);
             return b;
-        } else return loginWithPass();
+        } else {
+            boolean b = loginWithPass();
+            System.out.println("login with pass success? " + b);
+            return b;
+        }
     }
 
     private boolean loginWithSid() throws IOException {
@@ -319,7 +323,7 @@ public class VkontakteAPI {
         JSONArray messagesArray = messagesJson.getJSONArray("d");
         for (int i = 0; i < messagesArray.length(); i++) {
             JSONArray messageJson = (JSONArray) messagesArray.get(i);
-            statuses.add(new Status(messageJson));
+            statuses.add(Status.fromJson(messageJson));
         }
         return statuses;
     }

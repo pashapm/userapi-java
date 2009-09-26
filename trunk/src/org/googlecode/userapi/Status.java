@@ -13,13 +13,16 @@ public class Status {
     private Date date;
     private String text;
 
-    public Status(JSONArray statusJson) throws JSONException {
-        statusId = Long.parseLong(statusJson.getString(0).split("_")[1]);
-        userId = statusJson.getLong(1);
+    public static Status fromJson(JSONArray statusJson) throws JSONException {
+        if (statusJson.getString(0).split("_").length == 1 || statusJson.getString(0).split("_")[1].equals("-1"))
+            return null;
+        long statusId = Long.parseLong(statusJson.getString(0).split("_")[1]);
+        long userId = statusJson.getLong(1);
 //        reserved = statusJson.getInt(2);
-        userName = statusJson.getString(3);
-        date = new Date(statusJson.getLong(4)*1000);
-        text = statusJson.getString(5);
+        String userName = statusJson.getString(3);
+        Date date = new Date(statusJson.getLong(4) * 1000);
+        String text = statusJson.getString(5);
+        return new Status(statusId, userId, 0, userName, date, text);
     }
 
     public Status(long statusId, long userId, int reserved, String userName, Date date, String text) {
