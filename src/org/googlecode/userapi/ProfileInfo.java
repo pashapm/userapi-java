@@ -39,7 +39,7 @@ public class ProfileInfo {
         surname = profileJson.getString("ln");
         maidenName = profileJson.getString("mn");
         JSONObject element = profileJson.getJSONObject("actv");
-        status = new Status(JSONHelper.objectToArray(element));
+        status = Status.fromJson(JSONHelper.objectToArray(element));
         photo = profileJson.getString("bp");
         sex = profileJson.getInt("sx");
         int bd = profileJson.getInt("bd");
@@ -50,7 +50,8 @@ public class ProfileInfo {
             calendar.set(by, bm - 1, bd, 0, 0, 0);
             birthday = calendar.getTime();
         }
-        phone = profileJson.getString("mo");
+        if (profileJson.has("mo"))
+            phone = profileJson.getString("mo");
     }
 
     public long getId() {
