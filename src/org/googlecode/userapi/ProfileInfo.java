@@ -7,16 +7,32 @@ import java.util.Date;
 import java.util.Calendar;
 
 public class ProfileInfo {
-    private long id;
-    private String firstname;
-    private String surname;
-    private String maidenName;
-    private Status status;
-    private String photo;
-    private int sex;
-    private Date birthday;
-    private String phone;
+    protected long id;
+    protected String firstname;
+    protected String surname;
+    protected String maidenName;
+    protected Status status;
+    protected String photo;
+    protected int sex;
+    protected Date birthday;
+    protected String phone;
 
+    public ProfileInfo(ProfileInfo p) {
+    	id = p.getId();
+    	firstname = p.getFirstname();
+    	surname = p.getSurname();
+    	maidenName = p.getMaidenName();
+    	status = p.getStatus();
+    	photo = p.getPhoto();
+    	sex = p.getSex();
+    	birthday = p.getBirthday();
+    	phone = p.getPhone();
+    }
+    
+    public ProfileInfo() {
+    	
+    }
+    
     public ProfileInfo(JSONObject profileJson) throws JSONException {
         id = profileJson.getLong("id");
         firstname = profileJson.getString("fn");
