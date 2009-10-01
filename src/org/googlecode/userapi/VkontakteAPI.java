@@ -107,7 +107,7 @@ public class VkontakteAPI {
         credentials.setSession(sid);
         credentials.setRemixpass(remixpassword);
         return remixpassword != null;
-    } 
+    }
 
     public boolean loginWithRemix() throws IOException {
         String urlString = "http://login.userapi.com/auth?login=auto&site=" + SITE_ID;
@@ -127,8 +127,9 @@ public class VkontakteAPI {
     }
 
     public Credentials getCred() {
-    	return credentials;
+        return credentials;
     }
+
     /**
      * Returns friend list for a user
      *
@@ -379,7 +380,7 @@ public class VkontakteAPI {
             System.out.println("session expired!");
             credentials.setSession(null);
             login(credentials);
-            return doWothCaptcha(url);
+            return getTextFromUrl(url);
         } else if (result.equals(CAPTCHA_REQUIRED)) {
             System.out.println("captcha required!");
             return doWothCaptcha(url);
@@ -388,6 +389,7 @@ public class VkontakteAPI {
     }
 
     private String doWothCaptcha(String url) throws IOException {
+        if (captchaHandler == null) throw new IllegalStateException("captch handler is not set!");
         String captcha_sid = String.valueOf(Math.abs(new Random().nextLong()));
         String captcha_url = "http://userapi.com/data?act=captcha&csid=" + captcha_sid;
         String captcha_code = captchaHandler.handleCaptcha(captcha_url);
