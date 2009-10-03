@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Random;
 
 public class VkontakteAPI {
-    public long id;
+    public long myId;
 
     private AbstractHttpClient httpClient;
     //    private static final int SITE_ID = 4128;
@@ -42,7 +42,7 @@ public class VkontakteAPI {
         this.captchaHandler = captchaHandler;
     }
 
-    public enum friendsTypes {
+    private enum friendsTypes {
         friends, friends_mutual, friends_online, friends_new
     }
 
@@ -88,8 +88,8 @@ public class VkontakteAPI {
     }
 
     private boolean loginWithSid() throws IOException {
-        String url = "http://userapi.com/data?act=" + "history" + "&sid=" + credentials.getSession();
-        return !getTextFromUrl(url).equals(SESSION_EXPIRED);
+        String url = UrlBuilder.makeUrl("history");//simple check by getting history
+        return !getTextFromUrl(url, false).equals(SESSION_EXPIRED);
     }
 
     public boolean loginWithPass() throws IOException {
@@ -102,7 +102,7 @@ public class VkontakteAPI {
         String remixpassword = null;
         for (Cookie cookie : cookies) {
             if (cookie.getName().equalsIgnoreCase("remixpassword")) remixpassword = cookie.getValue();
-            if (cookie.getName().equalsIgnoreCase("remixmid")) id = Long.parseLong(cookie.getValue());
+            if (cookie.getName().equalsIgnoreCase("remixmid")) myId = Long.parseLong(cookie.getValue());
         }
         credentials.setSession(sid);
         credentials.setRemixpass(remixpassword);
@@ -139,12 +139,13 @@ public class VkontakteAPI {
      * @param type - type of friends to return
      * @return friend list for a user
      * @throws java.io.IOException    in case of connection problems
-     * @throws org.json.JSONException
+     * @throws org.json.JSONException in case of problems with reply parsing
      */
-    public List<User> getFriends(long id, int from, int to, friendsTypes type) throws IOException, JSONException {
+    private List<User> getFriends(long id, int from, int to, friendsTypes type) throws IOException, JSONException {
         List<User> friends = new LinkedList<User>();
-        String url = "http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession();
+        String url = UrlBuilder.makeUrl(type.name(), id, from, to);
         String jsonText = getTextFromUrl(url);
+        System.out.println(jsonText);
         JSONArray fr;
         if (type == friendsTypes.friends_new) {
             JSONObject object = new JSONObject(jsonText);
@@ -156,18 +157,58 @@ public class VkontakteAPI {
             JSONArray userInfo = (JSONArray) fr.get(i);
             friends.add(new User(userInfo, this));
         }
+        //todo: friendsHiddenExcetion
         return friends;
     }
 
-    public List<User> getFriends(long userId) throws IOException, JSONException {
+    private List<User> getFriends(long id, friendsTypes type) throws IOException, JSONException {
         int current = 0;
         int fetchSize = 1024;
         List<User> friends = new LinkedList<User>();
-        while (friends.addAll(getFriends(userId, current, current + fetchSize, friendsTypes.friends))) {
+        while (friends.addAll(getFriends(id, current, current + fetchSize, type))) {
             current += fetchSize;
         }
-        //todo: friendsHiddenExcetion
         return friends;
+    }
+
+    private String getTextFromUrl(String url) throws IOException {
+        return getTextFromUrl(url, true);
+    }
+
+    /**
+     * Returns friend list for a user
+     *
+     * @param userId user ID
+     * @return List<User> friends
+     * @throws java.io.IOException    in case of connection problems
+     * @throws org.json.JSONException in case of problems with reply parsing
+     */
+    public List<User> getFriends(long userId) throws IOException, JSONException {
+        return getFriends(userId, friendsTypes.friends);
+    }
+
+    /**
+     * Returns online friend list for a user
+     *
+     * @param userId user ID
+     * @return List<User> friends
+     * @throws java.io.IOException    in case of connection problems
+     * @throws org.json.JSONException in case of problems with reply parsing
+     */
+    public List<User> getFriendsOnline(long userId) throws IOException, JSONException {
+        return getFriends(userId, friendsTypes.friends_online);
+    }
+
+    /**
+     * Returns mutual friends list for a user
+     *
+     * @param userId user ID
+     * @return List<User> friends
+     * @throws java.io.IOException    in case of connection problems
+     * @throws org.json.JSONException in case of problems with reply parsing
+     */
+    public List<User> getFriendsMutual(long userId) throws IOException, JSONException {
+        return getFriends(userId, friendsTypes.friends_mutual);
     }
 
     public List<User> getMyFriends() throws IOException, JSONException {
@@ -176,7 +217,7 @@ public class VkontakteAPI {
         List<User> friends = new LinkedList<User>();
         List<User> tmp;
         do {
-            tmp = getFriends(id, current, current + fetchSize, friendsTypes.friends);
+            tmp = getFriends(myId, current, current + fetchSize, friendsTypes.friends);
             friends.addAll(tmp);
             current += fetchSize;
         } while (tmp.size() == fetchSize);
@@ -206,8 +247,8 @@ public class VkontakteAPI {
      */
     public List<Photo> getPhotos(long id, int from, int to, photosTypes type) throws IOException, JSONException {
         List<Photo> photos = new LinkedList<Photo>();
-        URL url = new URL("http://userapi.com/data?act=" + type.name() + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession());
-        String jsonText = getTextFromUrl(url);
+        String url = UrlBuilder.makeUrl(type.name(), id, from, to);
+        String jsonText = getTextFromUrl(url, true);
         JSONArray photosJson;
         if (type == photosTypes.photos) {
             photosJson = new JSONArray(jsonText);
@@ -223,8 +264,9 @@ public class VkontakteAPI {
 
     public List<Message> getPrivateMessages(long id, int from, int to, privateMessagesTypes type) throws IOException, JSONException {
         List<Message> messages = new LinkedList<Message>();
-        URL url = new URL("http://userapi.com/data?act=" + type + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession());
-        String jsonText = getTextFromUrl(url);
+//        URL url = new URL("http://userapi.com/data?act=" + type + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession());
+        String url = UrlBuilder.makeUrl(type.name(), id, from, to);
+        String jsonText = getTextFromUrl(url, true);
         JSONObject messagesJson = new JSONObject(jsonText);
 //        Long count = messagesJson.getLong("n");
         Long history = messagesJson.getLong("h");
@@ -246,11 +288,11 @@ public class VkontakteAPI {
     }
 
     public List<Message> getInbox(int from, int to) throws IOException, JSONException {
-        return getPrivateMessages(id, from, to, privateMessagesTypes.inbox);
+        return getPrivateMessages(myId, from, to, privateMessagesTypes.inbox);
     }
 
     public List<Message> getOutbox(int from, int to) throws IOException, JSONException {
-        return getPrivateMessages(id, from, to, privateMessagesTypes.outbox);
+        return getPrivateMessages(myId, from, to, privateMessagesTypes.outbox);
     }
 
     /**
@@ -265,8 +307,8 @@ public class VkontakteAPI {
      */
     public List<Message> getWallMessages(long id, int from, int to) throws IOException, JSONException {
         List<Message> messages = new LinkedList<Message>();
-        URL url = new URL("http://userapi.com/data?act=" + "wall" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession());
-        String jsonText = getTextFromUrl(url);
+        String url = UrlBuilder.makeUrl("wall", id, from, to);
+        String jsonText = getTextFromUrl(url, true);
         JSONObject messagesJson = new JSONObject(jsonText);
         Long count = messagesJson.getLong("n");
         Long history = messagesJson.getLong("h");
@@ -307,8 +349,8 @@ public class VkontakteAPI {
      * @throws org.json.JSONException
      */
     public ChangesHistory getChangesHistory() throws IOException, JSONException {
-        String url = "http://userapi.com/data?act=" + "history" + "&sid=" + credentials.getSession();
-        String jsonText = getTextFromUrl(url);
+        String url = UrlBuilder.makeUrl("history");
+        String jsonText = getTextFromUrl(url, true);
         JSONObject messagesJson = new JSONObject(jsonText);
         long messagesCount = messagesJson.has("nm") ? messagesJson.getLong("nm") : 0;
         long friendsCount = messagesJson.has("nf") ? messagesJson.getLong("nf") : 0;
@@ -330,31 +372,28 @@ public class VkontakteAPI {
     }
 
     public List<Status> getStatusHistory(long id) throws IOException, JSONException {
-        String url = "http://userapi.com/data?act=" + "activity" + "&from=" + 0 + "&to=" + 0 + "&id=" + id + "&sid=" + credentials.getSession();
+        String url = UrlBuilder.makeUrl("activity", id, 0, 0);
         JSONObject messagesJson = getJsonFromUrl(url);
         int count = messagesJson.getInt("n");
         return getStatusHistory(id, 0, count, 0);
     }
 
     public List<Status> getMyStatusHistory() throws IOException, JSONException {
-        String url = "http://userapi.com/data?act=" + "activity" + "&from=" + 0 + "&to=" + 0 + "&id=" + id + "&sid=" + credentials.getSession();
-        JSONObject messagesJson = getJsonFromUrl(url);
-        int count = messagesJson.getInt("n");
-        return getStatusHistory(id, 0, count, 0);
+        return getStatusHistory(myId);
     }
 
     public ProfileInfo getProfile(long id) throws IOException, JSONException {
-        String url = "http://userapi.com/data?act=" + "profile" + "&id=" + id + "&sid=" + credentials.getSession();
+        String url = UrlBuilder.makeUrl("profile", id);
         JSONObject jsonText = getJsonFromUrl(url);
         return new ProfileInfo(jsonText);
     }
 
     public ProfileInfo getMyProfile() throws IOException, JSONException {
-        return getProfile(id);
+        return getProfile(myId);
     }
 
 
-    protected byte[] getFileFromUrl(String url) throws IOException {
+    public byte[] getFileFromUrl(String url) throws IOException {
         if (url == null) return new byte[]{};
         HttpGet httpGet = new HttpGet(url);
         HttpResponse response = httpClient.execute(httpGet);
@@ -367,8 +406,8 @@ public class VkontakteAPI {
         return result;
     }
 
-    private String getTextFromUrl(String url) throws IOException {
-        HttpGet httpGet = new HttpGet(url);
+    private String getTextFromUrl(String url, boolean autoRelogin) throws IOException {
+        HttpGet httpGet = new HttpGet(url + "&sid=" + credentials.getSession());
         HttpResponse response = httpClient.execute(httpGet);
         HttpEntity httpEntity = response.getEntity();
         String result = null;
@@ -376,11 +415,12 @@ public class VkontakteAPI {
             result = EntityUtils.toString(httpEntity);
             httpEntity.consumeContent();
         }
-        if (result.equals(SESSION_EXPIRED)) {
+        System.out.println(result);
+        if (result.equals(SESSION_EXPIRED) && autoRelogin) {
             System.out.println("session expired!");
             credentials.setSession(null);
             login(credentials);
-            return getTextFromUrl(url);
+            return getTextFromUrl(url, false);
         } else if (result.equals(CAPTCHA_REQUIRED)) {
             System.out.println("captcha required!");
             return doWothCaptcha(url);
@@ -391,16 +431,16 @@ public class VkontakteAPI {
     private String doWothCaptcha(String url) throws IOException {
         if (captchaHandler == null) throw new IllegalStateException("captch handler is not set!");
         String captcha_sid = String.valueOf(Math.abs(new Random().nextLong()));
-        String captcha_url = "http://userapi.com/data?act=captcha&csid=" + captcha_sid;
+        String captcha_url = UrlBuilder.makeUrl("captcha") + "&csid=" + captcha_sid;
         String captcha_code = captchaHandler.handleCaptcha(captcha_url);
-        return getTextFromUrl(url + "&fcsid=" + captcha_sid + "&fccode=" + captcha_code);
+        return getTextFromUrl(url + "&fcsid=" + captcha_sid + "&fccode=" + captcha_code, false);
     }
 
     private String getTextFromUrl(URL url) throws IOException {
-        return getTextFromUrl(url.toString());
+        return getTextFromUrl(url.toString(), false);
     }
 
     private JSONObject getJsonFromUrl(String url) throws IOException, JSONException {
-        return new JSONObject(getTextFromUrl(url));
+        return new JSONObject(getTextFromUrl(url, false));
     }
 }
