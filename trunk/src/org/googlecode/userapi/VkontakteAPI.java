@@ -212,26 +212,11 @@ public class VkontakteAPI {
     }
 
     public List<User> getMyFriends() throws IOException, JSONException {
-        int current = 0;
-        int fetchSize = 1024;
-        List<User> friends = new LinkedList<User>();
-        List<User> tmp;
-        do {
-            tmp = getFriends(myId, current, current + fetchSize, friendsTypes.friends);
-            friends.addAll(tmp);
-            current += fetchSize;
-        } while (tmp.size() == fetchSize);
-        return friends;
+        return getFriends(myId, friendsTypes.friends);
     }
 
     public List<User> getMyNewFriends() throws IOException, JSONException {
-        int current = 0;
-        int fetchSize = 1024;
-        List<User> friends = new LinkedList<User>();
-        while (friends.addAll(getFriends(-1, current, current + fetchSize, friendsTypes.friends_new))) {
-            current += fetchSize;
-        }
-        return friends;
+        return getFriends(myId, friendsTypes.friends_new);
     }
 
     /**
