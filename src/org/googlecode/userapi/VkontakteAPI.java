@@ -33,8 +33,9 @@ public class VkontakteAPI {
     private AbstractHttpClient httpClient;
     //    private static final int SITE_ID = 4128;
     private static final int SITE_ID = 2;
-    private static final String CAPTCHA_REQUIRED = "{\"ok\":-2}";
     private static final String SESSION_EXPIRED = "{\"ok\":-1}";
+    private static final String CAPTCHA_REQUIRED = "{\"ok\":-2}";
+    private static final String FRIENDS_HIDDEN = "{\"ok\":-3}";
     private CaptchaHandler captchaHandler;
     private Credentials credentials;
 
@@ -87,9 +88,18 @@ public class VkontakteAPI {
         }
     }
 
+    //simple check by getting history
     private boolean loginWithSid() throws IOException {
-        String url = UrlBuilder.makeUrl("history");//simple check by getting history
-        return !getTextFromUrl(url, false).equals(SESSION_EXPIRED);
+        String url = UrlBuilder.makeUrl("history");
+        HttpGet httpGet = new HttpGet(url + "&sid=" + credentials.getSession());
+        HttpResponse response = httpClient.execute(httpGet);
+        HttpEntity httpEntity = response.getEntity();
+        String result = null;
+        if (httpEntity != null) {
+            result = EntityUtils.toString(httpEntity);
+            httpEntity.consumeContent();
+        }
+        return !result.equals(SESSION_EXPIRED);
     }
 
     public boolean loginWithPass() throws IOException {
@@ -142,10 +152,19 @@ public class VkontakteAPI {
      * @throws org.json.JSONException in case of problems with reply parsing
      */
     private List<User> getFriends(long id, int from, int to, friendsTypes type) throws IOException, JSONException {
-        List<User> friends = new LinkedList<User>();
         String url = UrlBuilder.makeUrl(type.name(), id, from, to);
         String jsonText = getTextFromUrl(url);
-        System.out.println(jsonText);
+        return makeFriendsFromString(type, jsonText);
+    }
+
+    private List<User> getFriendsOrThrow(long id, int from, int to, friendsTypes type) throws IOException, JSONException, PageHiddenException {
+        String url = UrlBuilder.makeUrl(type.name(), id, from, to);
+        String jsonText = getTextFromUrlOrThrow(url);
+        return makeFriendsFromString(type, jsonText);
+    }
+
+    private List<User> makeFriendsFromString(friendsTypes type, String jsonText) throws JSONException {
+        List<User> friends = new LinkedList<User>();
         JSONArray fr;
         if (type == friendsTypes.friends_new) {
             JSONObject object = new JSONObject(jsonText);
@@ -157,7 +176,16 @@ public class VkontakteAPI {
             JSONArray userInfo = (JSONArray) fr.get(i);
             friends.add(new User(userInfo, this));
         }
-        //todo: friendsHiddenExcetion
+        return friends;
+    }
+
+    private List<User> getFriendsOrThrow(long id, friendsTypes type) throws IOException, JSONException, PageHiddenException {
+        int current = 0;
+        int fetchSize = 1024;
+        List<User> friends = new LinkedList<User>();
+        while (friends.addAll(getFriendsOrThrow(id, current, current + fetchSize, type))) {
+            current += fetchSize;
+        }
         return friends;
     }
 
@@ -171,10 +199,6 @@ public class VkontakteAPI {
         return friends;
     }
 
-    private String getTextFromUrl(String url) throws IOException {
-        return getTextFromUrl(url, true);
-    }
-
     /**
      * Returns friend list for a user
      *
@@ -182,9 +206,10 @@ public class VkontakteAPI {
      * @return List<User> friends
      * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException in case of problems with reply parsing
+     * @throws PageHiddenException    if friends page is hidden
      */
-    public List<User> getFriends(long userId) throws IOException, JSONException {
-        return getFriends(userId, friendsTypes.friends);
+    public List<User> getFriends(long userId) throws IOException, JSONException, PageHiddenException {
+        return getFriendsOrThrow(userId, friendsTypes.friends);
     }
 
     /**
@@ -194,9 +219,10 @@ public class VkontakteAPI {
      * @return List<User> friends
      * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException in case of problems with reply parsing
+     * @throws PageHiddenException    if friends page is hidden
      */
-    public List<User> getFriendsOnline(long userId) throws IOException, JSONException {
-        return getFriends(userId, friendsTypes.friends_online);
+    public List<User> getFriendsOnline(long userId) throws IOException, JSONException, PageHiddenException {
+        return getFriendsOrThrow(userId, friendsTypes.friends_online);
     }
 
     /**
@@ -206,9 +232,10 @@ public class VkontakteAPI {
      * @return List<User> friends
      * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException in case of problems with reply parsing
+     * @throws PageHiddenException    if friends page is hidden
      */
-    public List<User> getFriendsMutual(long userId) throws IOException, JSONException {
-        return getFriends(userId, friendsTypes.friends_mutual);
+    public List<User> getFriendsMutual(long userId) throws IOException, JSONException, PageHiddenException {
+        return getFriendsOrThrow(userId, friendsTypes.friends_mutual);
     }
 
     public List<User> getMyFriends() throws IOException, JSONException {
@@ -230,10 +257,10 @@ public class VkontakteAPI {
      * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException
      */
-    public List<Photo> getPhotos(long id, int from, int to, photosTypes type) throws IOException, JSONException {
+    public List<Photo> getPhotos(long id, int from, int to, photosTypes type) throws IOException, JSONException, PageHiddenException {
         List<Photo> photos = new LinkedList<Photo>();
         String url = UrlBuilder.makeUrl(type.name(), id, from, to);
-        String jsonText = getTextFromUrl(url, true);
+        String jsonText = getTextFromUrl(url);
         JSONArray photosJson;
         if (type == photosTypes.photos) {
             photosJson = new JSONArray(jsonText);
@@ -251,7 +278,7 @@ public class VkontakteAPI {
         List<Message> messages = new LinkedList<Message>();
 //        URL url = new URL("http://userapi.com/data?act=" + type + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession());
         String url = UrlBuilder.makeUrl(type.name(), id, from, to);
-        String jsonText = getTextFromUrl(url, true);
+        String jsonText = getTextFromUrl(url);
         JSONObject messagesJson = new JSONObject(jsonText);
 //        Long count = messagesJson.getLong("n");
         Long history = messagesJson.getLong("h");
@@ -290,10 +317,10 @@ public class VkontakteAPI {
      * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException
      */
-    public List<Message> getWallMessages(long id, int from, int to) throws IOException, JSONException {
+    public List<Message> getWallMessages(long id, int from, int to) throws IOException, JSONException, PageHiddenException {
         List<Message> messages = new LinkedList<Message>();
         String url = UrlBuilder.makeUrl("wall", id, from, to);
-        String jsonText = getTextFromUrl(url, true);
+        String jsonText = getTextFromUrlOrThrow(url);
         JSONObject messagesJson = new JSONObject(jsonText);
         Long count = messagesJson.getLong("n");
         Long history = messagesJson.getLong("h");
@@ -322,7 +349,7 @@ public class VkontakteAPI {
                 "&ts=" + sendingMessage.getDate().getTime() +
                 "&message=" + URLEncoder.encode(sendingMessage.getText(), "UTF-8") + "&sid=" + credentials.getSession());
 
-        return getTextFromUrl(url);
+        return getTextFromUrl(url.toString());
     }
 
     /**
@@ -335,7 +362,7 @@ public class VkontakteAPI {
      */
     public ChangesHistory getChangesHistory() throws IOException, JSONException {
         String url = UrlBuilder.makeUrl("history");
-        String jsonText = getTextFromUrl(url, true);
+        String jsonText = getTextFromUrl(url);
         JSONObject messagesJson = new JSONObject(jsonText);
         long messagesCount = messagesJson.has("nm") ? messagesJson.getLong("nm") : 0;
         long friendsCount = messagesJson.has("nf") ? messagesJson.getLong("nf") : 0;
@@ -345,9 +372,8 @@ public class VkontakteAPI {
 
     private List<Status> getStatusHistory(long id, int from, int to, long ts) throws IOException, JSONException {
         List<Status> statuses = new LinkedList<Status>();
-        URL url = new URL("http://userapi.com/data?act=" + "activity" + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession() + (ts == 0 ? "" : ("&ts=" + ts)));
-        String jsonText = getTextFromUrl(url);
-        JSONObject messagesJson = new JSONObject(jsonText);
+        String url = UrlBuilder.makeUrl("activity", id, 0, 0) + (ts == 0 ? "" : ("&ts=" + ts));
+        JSONObject messagesJson = new JSONObject(getTextFromUrl(url));
         JSONArray messagesArray = messagesJson.getJSONArray("d");
         for (int i = 0; i < messagesArray.length(); i++) {
             JSONArray messageJson = (JSONArray) messagesArray.get(i);
@@ -358,7 +384,7 @@ public class VkontakteAPI {
 
     public List<Status> getStatusHistory(long id) throws IOException, JSONException {
         String url = UrlBuilder.makeUrl("activity", id, 0, 0);
-        JSONObject messagesJson = getJsonFromUrl(url);
+        JSONObject messagesJson = new JSONObject(getTextFromUrl(url));
         int count = messagesJson.getInt("n");
         return getStatusHistory(id, 0, count, 0);
     }
@@ -367,16 +393,21 @@ public class VkontakteAPI {
         return getStatusHistory(myId);
     }
 
-    public ProfileInfo getProfile(long id) throws IOException, JSONException {
+    private ProfileInfo getProfile(long id) throws IOException, JSONException {
         String url = UrlBuilder.makeUrl("profile", id);
-        JSONObject jsonText = getJsonFromUrl(url);
+        JSONObject jsonText = new JSONObject(getTextFromUrl(url));
+        return new ProfileInfo(jsonText);
+    }
+
+    public ProfileInfo getProfileOrThrow(long id) throws IOException, JSONException {
+        String url = UrlBuilder.makeUrl("profile", id);
+        JSONObject jsonText = new JSONObject(getTextFromUrl(url));
         return new ProfileInfo(jsonText);
     }
 
     public ProfileInfo getMyProfile() throws IOException, JSONException {
         return getProfile(myId);
     }
-
 
     public byte[] getFileFromUrl(String url) throws IOException {
         if (url == null) return new byte[]{};
@@ -391,7 +422,7 @@ public class VkontakteAPI {
         return result;
     }
 
-    private String getTextFromUrl(String url, boolean autoRelogin) throws IOException {
+    private String getTextFromUrlOrThrow(String url) throws IOException, PageHiddenException {
         HttpGet httpGet = new HttpGet(url + "&sid=" + credentials.getSession());
         HttpResponse response = httpClient.execute(httpGet);
         HttpEntity httpEntity = response.getEntity();
@@ -399,33 +430,58 @@ public class VkontakteAPI {
         if (httpEntity != null) {
             result = EntityUtils.toString(httpEntity);
             httpEntity.consumeContent();
+            System.out.println(result);
+            if (result.equals(FRIENDS_HIDDEN)) {
+                throw new PageHiddenException();
+            } else if (result.equals(SESSION_EXPIRED)) {
+                System.out.println("session expired!");
+                credentials.setSession(null);
+                login(credentials);
+                return getTextFromUrl(url);
+            } else if (result.equals(CAPTCHA_REQUIRED)) {
+                System.out.println("captcha required!");
+                return doWothCaptchaOrThrow(url);
+            }
         }
-        System.out.println(result);
-        if (result.equals(SESSION_EXPIRED) && autoRelogin) {
-            System.out.println("session expired!");
-            credentials.setSession(null);
-            login(credentials);
-            return getTextFromUrl(url, false);
-        } else if (result.equals(CAPTCHA_REQUIRED)) {
-            System.out.println("captcha required!");
-            return doWothCaptcha(url);
+        return result;
+    }
+
+    private String getTextFromUrl(String url) throws IOException {
+        HttpGet httpGet = new HttpGet(url + "&sid=" + credentials.getSession());
+        HttpResponse response = httpClient.execute(httpGet);
+        HttpEntity httpEntity = response.getEntity();
+        String result = null;
+        if (httpEntity != null) {
+            result = EntityUtils.toString(httpEntity);
+            httpEntity.consumeContent();
+            if (result.equals(SESSION_EXPIRED)) {
+                System.out.println("session expired!");
+                credentials.setSession(null);
+                login(credentials);//todo
+                return getTextFromUrl(url);
+            } else if (result.equals(CAPTCHA_REQUIRED)) {
+                System.out.println("captcha required!");
+                return doWothCaptcha(url);
+            }
         }
         return result;
     }
 
     private String doWothCaptcha(String url) throws IOException {
-        if (captchaHandler == null) throw new IllegalStateException("captch handler is not set!");
+        String newUrl = prepareNewUrl(url);
+        return getTextFromUrl(newUrl);
+    }
+
+    private String doWothCaptchaOrThrow(String url) throws IOException, PageHiddenException {
+        String newUrl = prepareNewUrl(url);
+        return getTextFromUrlOrThrow(newUrl);
+    }
+
+    private String prepareNewUrl(String url) {
+        if (captchaHandler == null) throw new IllegalStateException("captch handler must be set!");
         String captcha_sid = String.valueOf(Math.abs(new Random().nextLong()));
         String captcha_url = UrlBuilder.makeUrl("captcha") + "&csid=" + captcha_sid;
         String captcha_code = captchaHandler.handleCaptcha(captcha_url);
-        return getTextFromUrl(url + "&fcsid=" + captcha_sid + "&fccode=" + captcha_code, false);
-    }
-
-    private String getTextFromUrl(URL url) throws IOException {
-        return getTextFromUrl(url.toString(), false);
-    }
-
-    private JSONObject getJsonFromUrl(String url) throws IOException, JSONException {
-        return new JSONObject(getTextFromUrl(url, false));
+        return url + "&fcsid=" + captcha_sid + "&fccode=" + captcha_code;
     }
 }
