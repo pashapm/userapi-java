@@ -409,6 +409,22 @@ public class VkontakteAPI {
         return getProfile(myId);
     }
 
+    /**
+     * Updates current user status
+     *
+     * @param text - current status
+     * @return true is update was successfull
+     * @throws java.io.IOException    in case of connection problems
+     * @throws org.json.JSONException
+     */
+    public boolean setStatus(String text) throws IOException, JSONException {
+        String url = UrlBuilder.makeUrl("set_activity") + "&text=" + URLEncoder.encode(text, "UTF-8");
+        String result = getTextFromUrl(url);
+        System.out.println(result);
+        JSONObject o = new JSONObject(result);
+        return o.getInt("ok") == 1;
+    }
+
     public byte[] getFileFromUrl(String url) throws IOException {
         if (url == null) return new byte[]{};
         HttpGet httpGet = new HttpGet(url);
