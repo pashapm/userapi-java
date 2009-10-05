@@ -31,4 +31,9 @@ public class UrlBuilder {
         }
         return url.toString();
     }
+
+    public static String makeUrl(String action, int from, int to) {
+        String url = urlBase + "data?act=" + action + "&from=" + from + "&to=" + to;
+        return url;
+    }
 }

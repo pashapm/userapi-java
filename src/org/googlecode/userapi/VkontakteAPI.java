@@ -256,8 +256,27 @@ public class VkontakteAPI {
      * @return the last element in this list
      * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException
+     * @throws PageHiddenException    if photos page is hidden
      */
     public List<Photo> getPhotos(long id, int from, int to, photosTypes type) throws IOException, JSONException, PageHiddenException {
+        String url = UrlBuilder.makeUrl(type.name(), id, from, to);
+        String jsonText = getTextFromUrlOrThrow(url);
+        System.out.println(jsonText);
+        List<Photo> photos = new LinkedList<Photo>();
+        JSONArray photosJson;
+        if (type == photosTypes.photos) {
+            photosJson = new JSONArray(jsonText);
+        } else {
+            photosJson = new JSONObject(jsonText).getJSONArray("d");
+        }
+        for (int i = 0; i < photosJson.length(); i++) {
+            JSONArray photoInfo = (JSONArray) photosJson.get(i);
+            photos.add(new Photo(photoInfo, this));
+        }
+        return photos;
+    }
+
+    public List<Photo> getMyNewPhotos(long id, int from, int to, photosTypes type) throws IOException, JSONException {
         List<Photo> photos = new LinkedList<Photo>();
         String url = UrlBuilder.makeUrl(type.name(), id, from, to);
         String jsonText = getTextFromUrl(url);
@@ -370,6 +389,30 @@ public class VkontakteAPI {
         return new ChangesHistory(messagesCount, friendsCount, photosCount);
     }
 
+    /**
+     * Returns friends statuses updates
+     * Unlimited calls(captcha not required)
+     * should not be called for more than 150 items at time
+     *
+     * @param from first entry no.
+     * @param to   last entry no.
+     * @return new statuses
+     * @throws java.io.IOException    in case of connection problems
+     * @throws org.json.JSONException
+     */
+    public List<Status> getTimeline(int from, int to) throws IOException, JSONException {
+        String url = UrlBuilder.makeUrl("updates_activity", from, to);
+        JSONObject statusesJson = new JSONObject(getTextFromUrl(url));
+        JSONArray statusesArray = statusesJson.getJSONArray("d");
+        List<Status> statuses = new LinkedList<Status>();
+        for (int i = 0; i < statusesArray.length(); i++) {
+            JSONArray messageJson = (JSONArray) statusesArray.get(i);
+            statuses.add(Status.fromJson(messageJson));
+        }
+        System.out.println(statuses.size() + " elements");
+        return statuses;
+    }
+
     private List<Status> getStatusHistory(long id, int from, int to, long ts) throws IOException, JSONException {
         List<Status> statuses = new LinkedList<Status>();
         String url = UrlBuilder.makeUrl("activity", id, 0, 0) + (ts == 0 ? "" : ("&ts=" + ts));
@@ -466,6 +509,7 @@ public class VkontakteAPI {
         HttpGet httpGet = new HttpGet(url + "&sid=" + credentials.getSession());
         HttpResponse response = httpClient.execute(httpGet);
         HttpEntity httpEntity = response.getEntity();
+        System.out.println("Content-Length: " + response.getLastHeader("Content-Length"));
         String result = null;
         if (httpEntity != null) {
             result = EntityUtils.toString(httpEntity);
