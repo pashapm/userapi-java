@@ -402,14 +402,15 @@ public class VkontakteAPI {
      */
     public List<Status> getTimeline(int from, int to) throws IOException, JSONException {
         String url = UrlBuilder.makeUrl("updates_activity", from, to);
-        JSONObject statusesJson = new JSONObject(getTextFromUrl(url));
-        JSONArray statusesArray = statusesJson.getJSONArray("d");
         List<Status> statuses = new LinkedList<Status>();
-        for (int i = 0; i < statusesArray.length(); i++) {
-            JSONArray messageJson = (JSONArray) statusesArray.get(i);
-            statuses.add(Status.fromJson(messageJson));
+        JSONObject statusesJson = new JSONObject(getTextFromUrl(url));
+        if (!statusesJson.getString("d").equals("null")) {
+            JSONArray statusesArray = statusesJson.getJSONArray("d");
+            for (int i = 0; i < statusesArray.length(); i++) {
+                JSONArray messageJson = (JSONArray) statusesArray.get(i);
+                statuses.add(Status.fromJson(messageJson));
+            }
         }
-        System.out.println(statuses.size() + " elements");
         return statuses;
     }
 
@@ -509,7 +510,6 @@ public class VkontakteAPI {
         HttpGet httpGet = new HttpGet(url + "&sid=" + credentials.getSession());
         HttpResponse response = httpClient.execute(httpGet);
         HttpEntity httpEntity = response.getEntity();
-        System.out.println("Content-Length: " + response.getLastHeader("Content-Length"));
         String result = null;
         if (httpEntity != null) {
             result = EntityUtils.toString(httpEntity);
