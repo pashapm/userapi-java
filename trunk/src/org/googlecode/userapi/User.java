@@ -6,12 +6,12 @@ import org.json.JSONException;
 import java.io.IOException;
 
 public class User {
-    protected long userId;
-    protected String userName;
-    protected String userPhotoUrl;
-    protected String userPhotoUrlSmall;
-    protected boolean male;
-    protected boolean online = false;
+	private long userId;
+    private String userName;
+    private String userPhotoUrl;
+    private String userPhotoUrlSmall;
+    private boolean male;
+    private boolean online = false;
     private VkontakteAPI api;
 
     public User(JSONArray userInfo, VkontakteAPI api) throws JSONException {
