@@ -517,6 +517,8 @@ public class VkontakteAPI {
             if (result.equals(SESSION_EXPIRED)) {
                 System.out.println("session expired!");
                 credentials.setSession(null);
+                if (!login(credentials))
+                    credentials.setRemixpass(null);
                 login(credentials);//todo
                 return getTextFromUrl(url);
             } else if (result.equals(CAPTCHA_REQUIRED)) {
