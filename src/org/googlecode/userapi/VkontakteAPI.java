@@ -103,7 +103,7 @@ public class VkontakteAPI {
     }
 
     public boolean loginWithPass() throws IOException {
-        String urlString = "http://login.userapi.com/auth?login=force&site=" + SITE_ID + "&email=" + credentials.getLogin() + "&pass=" + credentials.getPass();
+        String urlString = "http://login.userapi.com/auth?login=force&site=" + SITE_ID + "&email=" + URLEncoder.encode(credentials.getLogin(), "UTF-8") + "&pass=" + URLEncoder.encode(credentials.getPass(), "UTF-8");
         HttpGet get = new HttpGet(urlString);
         HttpResponse response = httpClient.execute(get);
         String location = response.getFirstHeader("Location").getValue();
