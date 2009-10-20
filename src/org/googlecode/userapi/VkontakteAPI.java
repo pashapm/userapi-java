@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Random;
 
 public class VkontakteAPI {
+    //todo: myId should be set manually in case of non-username/pass login
     public long myId;
 
     private AbstractHttpClient httpClient;
@@ -349,6 +350,36 @@ public class VkontakteAPI {
             messages.add(new Message(messageJson, this));
         }
         return messages;
+    }
+
+    /**
+     * Mark message as read
+     *
+     * @param messageId - message id
+     * @throws IOException
+     */
+
+    public void markAsRead(long messageId) throws IOException {
+        String url = UrlBuilder.makeUrl("history");
+        url += "&read=" + messageId;
+        getTextFromUrl(url);
+    }
+
+    /**
+     * Delete message
+     *
+     * @param userId - user id
+     * @param messageId - message id
+     * @return true if message was successfully deleted and false otherwise
+     * @throws IOException
+     * @throws org.json.JSONException
+     */
+
+    public boolean deleteMessage(long userId, long messageId) throws IOException, JSONException {
+        String url = UrlBuilder.makeUrl();
+        url += "&act=del_message" + "&id=" + myId + "&wid=" + userId + "_" + messageId;
+        JSONObject jsonObject = new JSONObject(getTextFromUrl(url));
+        return jsonObject.getInt("ok") == 1;
     }
 
     /**
