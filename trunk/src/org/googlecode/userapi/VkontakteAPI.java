@@ -445,9 +445,9 @@ public class VkontakteAPI {
         return statuses;
     }
 
-    private List<Status> getStatusHistory(long id, int from, int to, long ts) throws IOException, JSONException {
+    public List<Status> getStatusHistory(long id, int from, int to, long ts) throws IOException, JSONException {
         List<Status> statuses = new LinkedList<Status>();
-        String url = UrlBuilder.makeUrl("activity", id, 0, 0) + (ts == 0 ? "" : ("&ts=" + ts));
+        String url = UrlBuilder.makeUrl("activity", id, from, to) + (ts == 0 ? "" : ("&ts=" + ts));
         JSONObject messagesJson = new JSONObject(getTextFromUrl(url));
         JSONArray messagesArray = messagesJson.getJSONArray("d");
         for (int i = 0; i < messagesArray.length(); i++) {
