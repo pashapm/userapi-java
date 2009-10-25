@@ -14,6 +14,9 @@ public class User {
     private boolean online = false;
     private VkontakteAPI api;
 
+    //sometimes we don't get any avatar. then use it as default
+    public static final String STUB_URL = "http://vkontakte.ru/images/question_b.gif"; 
+    
     public User(JSONArray userInfo, VkontakteAPI api) throws JSONException {
         this.api = api;
         userId = userInfo.getLong(0);
@@ -44,7 +47,7 @@ public class User {
     }
 
     public String getUserPhotoUrl() {
-        return userPhotoUrl;
+        return userPhotoUrl == null ? STUB_URL : userPhotoUrl;
     }
 
     public String getUserPhotoUrlSmall() {
@@ -52,7 +55,7 @@ public class User {
     }
 
     public byte[] getUserPhoto() throws IOException {
-        return api.getFileFromUrl(userPhotoUrl);
+        return api.getFileFromUrl(getUserPhotoUrl());
     }
 
     public byte[] getUserPhotoSmall() throws IOException {
