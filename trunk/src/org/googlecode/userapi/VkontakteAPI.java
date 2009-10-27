@@ -248,6 +248,34 @@ public class VkontakteAPI {
     }
 
     /**
+     * Add user to friend list/request addition
+     *
+     * @param userId friend ID
+     * @return true is action succeded
+     * @throws java.io.IOException    in case of connection problems
+     * @throws org.json.JSONException in case of problems with reply parsing
+     */
+    public boolean addToFriends(long userId) throws IOException, JSONException {
+        String url = UrlBuilder.makeUrl("add_friend", userId);
+        String result = getTextFromUrl(url);
+        return true;//todo!
+    }
+
+    /**
+     * Removes user from friend list/rejects reuest
+     *
+     * @param userId friend ID
+     * @return true is action succeded
+     * @throws java.io.IOException    in case of connection problems
+     * @throws org.json.JSONException in case of problems with reply parsing
+     */
+    public boolean removeFromFriends(long userId) throws IOException, JSONException {
+        String url = UrlBuilder.makeUrl("del_friend", userId);
+        String result = getTextFromUrl(url);
+        return true;//todo!
+    }
+
+    /**
      * Returns photo list for a user
      *
      * @param id   user id
