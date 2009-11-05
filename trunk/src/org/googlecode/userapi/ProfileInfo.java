@@ -40,7 +40,9 @@ public class ProfileInfo {
         maidenName = profileJson.getString("mn");
         JSONObject element = profileJson.getJSONObject("actv");
         status = Status.fromJson(JSONHelper.objectToArray(element));
-        photo = profileJson.getString("bp");
+        
+        //returns strange data if there is no avatar
+        photo = profileJson.getString("bp").contains("http") ? profileJson.getString("bp") : User.STUB_URL;
         sex = profileJson.getInt("sx");
         int bd = profileJson.getInt("bd");
         int bm = profileJson.getInt("bm");
