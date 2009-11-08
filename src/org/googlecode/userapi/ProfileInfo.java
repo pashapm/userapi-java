@@ -16,34 +16,42 @@ public class ProfileInfo {
     protected int sex;
     protected Date birthday;
     protected String phone;
+    protected int politicalViews;
+    protected int familyStatus;
 
     public ProfileInfo(ProfileInfo p) {
-    	id = p.getId();
-    	firstname = p.getFirstname();
-    	surname = p.getSurname();
-    	maidenName = p.getMaidenName();
-    	status = p.getStatus();
-    	photo = p.getPhoto();
-    	sex = p.getSex();
-    	birthday = p.getBirthday();
-    	phone = p.getPhone();
+        id = p.getId();
+        firstname = p.getFirstname();
+        surname = p.getSurname();
+        maidenName = p.getMaidenName();
+        status = p.getStatus();
+        photo = p.getPhoto();
+        sex = p.getSex();
+        birthday = p.getBirthday();
+        phone = p.getPhone();
+        politicalViews = p.getPoliticalViews();
+        familyStatus = p.getFamilyStatus();
     }
-    
+
     public ProfileInfo() {
-    	
+
     }
-    
+
     public ProfileInfo(JSONObject profileJson) throws JSONException {
+        //id
         id = profileJson.getLong("id");
+        //name
         firstname = profileJson.getString("fn");
         surname = profileJson.getString("ln");
+        //maiden name
         maidenName = profileJson.getString("mn");
         JSONObject element = profileJson.getJSONObject("actv");
+        //status
         status = Status.fromJson(JSONHelper.objectToArray(element));
-        
         //returns strange data if there is no avatar
         photo = profileJson.getString("bp").contains("http") ? profileJson.getString("bp") : User.STUB_URL;
         sex = profileJson.getInt("sx");
+        //birth day
         int bd = profileJson.getInt("bd");
         int bm = profileJson.getInt("bm");
         int by = profileJson.getInt("by");
@@ -52,8 +60,14 @@ public class ProfileInfo {
             calendar.set(by, bm - 1, bd, 0, 0, 0);
             birthday = calendar.getTime();
         }
+        //mobile phone
         if (profileJson.has("mo"))
             phone = profileJson.getString("mo");
+        //political views
+        politicalViews = profileJson.getInt("pv");
+        //family status
+        familyStatus = profileJson.getInt("fs");
+
     }
 
     public long getId() {
@@ -92,6 +106,14 @@ public class ProfileInfo {
         return phone;
     }
 
+    public int getPoliticalViews() {
+        return politicalViews;
+    }
+
+    public int getFamilyStatus() {
+        return familyStatus;
+    }
+
     @Override
     public String toString() {
         return "ProfileInfo{" +
@@ -104,6 +126,8 @@ public class ProfileInfo {
                 ", sex=" + sex +
                 ", birthday=" + birthday +
                 ", phone='" + phone + '\'' +
+                ", politicalViews='" + phone + '\'' +
+                ", familyStatus='" + phone + '\'' +
                 '}';
     }
 }
