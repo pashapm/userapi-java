@@ -18,6 +18,7 @@ public class ProfileInfo {
     protected String phone;
     protected int politicalViews;
     protected int familyStatus;
+    protected String currentCity;
 
     public ProfileInfo(ProfileInfo p) {
         id = p.getId();
@@ -31,6 +32,7 @@ public class ProfileInfo {
         phone = p.getPhone();
         politicalViews = p.getPoliticalViews();
         familyStatus = p.getFamilyStatus();
+        currentCity = p.currentCity;
     }
 
     public ProfileInfo() {
@@ -67,6 +69,8 @@ public class ProfileInfo {
         politicalViews = profileJson.getInt("pv");
         //family status
         familyStatus = profileJson.getInt("fs");
+        //current city
+        currentCity = profileJson.getJSONObject("ht").getString("cin");
 
     }
 
@@ -114,6 +118,10 @@ public class ProfileInfo {
         return familyStatus;
     }
 
+    public String getCurrentCity() {
+        return currentCity;
+    }
+
     @Override
     public String toString() {
         return "ProfileInfo{" +
@@ -126,8 +134,9 @@ public class ProfileInfo {
                 ", sex=" + sex +
                 ", birthday=" + birthday +
                 ", phone='" + phone + '\'' +
-                ", politicalViews='" + phone + '\'' +
-                ", familyStatus='" + phone + '\'' +
+                ", politicalViews='" + politicalViews + '\'' +
+                ", familyStatus='" + familyStatus + '\'' +
+                ", currentCity='" + currentCity + '\'' +
                 '}';
     }
 }
