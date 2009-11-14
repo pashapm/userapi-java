@@ -33,7 +33,7 @@ public class VkontakteAPI {
 
     private AbstractHttpClient httpClient;
     //    private static final int SITE_ID = 4128;
-    private static final int SITE_ID = 2;
+    private int siteId;
     private static final String SESSION_EXPIRED = "{\"ok\":-1}";
     private static final String CAPTCHA_REQUIRED = "{\"ok\":-2}";
     private static final String FRIENDS_HIDDEN = "{\"ok\":-3}";
@@ -60,7 +60,10 @@ public class VkontakteAPI {
         return httpClient;
     }
 
-    public VkontakteAPI() {
+    private VkontakteAPI(){}
+
+    public VkontakteAPI(int siteId) {
+        this.siteId = siteId;
         HttpParams params = new BasicHttpParams();
         SchemeRegistry schemeRegistry = new SchemeRegistry();
         schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
@@ -104,7 +107,7 @@ public class VkontakteAPI {
     }
 
     public boolean loginWithPass() throws IOException {
-        String urlString = "http://login.userapi.com/auth?login=force&site=" + SITE_ID + "&email=" + URLEncoder.encode(credentials.getLogin(), "UTF-8") + "&pass=" + URLEncoder.encode(credentials.getPass(), "UTF-8");
+        String urlString = "http://login.userapi.com/auth?login=force&site=" + siteId + "&email=" + URLEncoder.encode(credentials.getLogin(), "UTF-8") + "&pass=" + URLEncoder.encode(credentials.getPass(), "UTF-8");
         HttpGet get = new HttpGet(urlString);
         HttpResponse response = httpClient.execute(get);
         String location = response.getFirstHeader("Location").getValue();
@@ -121,7 +124,7 @@ public class VkontakteAPI {
     }
 
     public boolean loginWithRemix() throws IOException {
-        String urlString = "http://login.userapi.com/auth?login=auto&site=" + SITE_ID;
+        String urlString = "http://login.userapi.com/auth?login=auto&site=" + siteId;
         HttpGet get = new HttpGet(urlString);
         get.addHeader("Cookie", "remixpassword=" + credentials.getRemixpass());
         HttpResponse response = httpClient.execute(get);
@@ -132,7 +135,7 @@ public class VkontakteAPI {
     }
 
     public void logout() throws IOException {
-        String urlString = "http://login.userapi.com/auth?login=logout&site=" + SITE_ID + "&sid=" + credentials.getSession();
+        String urlString = "http://login.userapi.com/auth?login=logout&site=" + siteId + "&sid=" + credentials.getSession();
         HttpGet get = new HttpGet(urlString);
         HttpResponse response = httpClient.execute(get);
     }
