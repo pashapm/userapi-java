@@ -10,17 +10,26 @@ public class Photo {
     private long photoId;
     private String thumbnailUrl;
     private String imageUrl;
-    private VkontakteAPI api;
 
-    public Photo(JSONArray photoInfo, VkontakteAPI api) throws JSONException {
-        this.api = api;
-        //todo: handle ["_0","images\/m_null.gif","images\/x_null.gif"] - server with photo temporary unavailable;
+    public Photo(long userId, long photoId, String thumbnailUrl, String imageUrl) {
+        this.userId = userId;
+        this.photoId = photoId;
+        this.thumbnailUrl = thumbnailUrl;
+        this.imageUrl = imageUrl;
+    }
+
+    public static Photo fromJson(JSONArray photoInfo) throws JSONException {
         //todo: handle no photo set - images/question_b.gif
-        if (!photoInfo.getString(0).equalsIgnoreCase("_0")) {
-            userId = Long.parseLong(photoInfo.getString(0).split("_")[0]);
-            photoId = Long.parseLong(photoInfo.getString(0).split("_")[1]);
-            thumbnailUrl = photoInfo.getString(1);
-            imageUrl = photoInfo.getString(2);
+        String userAndPhotoString = photoInfo.getString(0);
+        if (!userAndPhotoString.equalsIgnoreCase("_0")) {
+            long userId = Long.parseLong(userAndPhotoString.split("_")[0]);
+            long photoId = Long.parseLong(userAndPhotoString.split("_")[1]);
+            String thumbnailUrl = photoInfo.getString(1);
+            String imageUrl = photoInfo.getString(2);
+            return new Photo(userId, photoId, thumbnailUrl, imageUrl);
+        } else {
+            //temporary unavailable photo
+            return null;
         }
     }
 
@@ -34,14 +43,6 @@ public class Photo {
 
     public String getThumbnailUrl() {
         return thumbnailUrl;
-    }
-
-    public byte[] getThumbnail() throws IOException {
-        return api.getFileFromUrl(thumbnailUrl);
-    }
-
-    public byte[] getImage() throws IOException {
-        return api.getFileFromUrl(imageUrl);
     }
 
     public String getImageUrl() {

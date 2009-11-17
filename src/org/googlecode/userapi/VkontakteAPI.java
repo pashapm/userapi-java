@@ -67,7 +67,8 @@ public class VkontakteAPI {
         return httpClient;
     }
 
-    private VkontakteAPI(){}
+    private VkontakteAPI() {
+    }
 
     public VkontakteAPI(int siteId) {
         this.siteId = siteId;
@@ -311,7 +312,9 @@ public class VkontakteAPI {
         }
         for (int i = 0; i < photosJson.length(); i++) {
             JSONArray photoInfo = (JSONArray) photosJson.get(i);
-            photos.add(new Photo(photoInfo, this));
+            Photo photo = Photo.fromJson(photoInfo);
+            if (photo != null)
+                photos.add(photo);
         }
         return photos;
     }
@@ -328,7 +331,9 @@ public class VkontakteAPI {
         }
         for (int i = 0; i < photosJson.length(); i++) {
             JSONArray photoInfo = (JSONArray) photosJson.get(i);
-            photos.add(new Photo(photoInfo, this));
+            Photo photo = Photo.fromJson(photoInfo);
+            if (photo != null)
+                photos.add(photo);
         }
         return photos;
     }
@@ -509,6 +514,33 @@ public class VkontakteAPI {
         return friends;
     }
 
+    /**
+     * Returns friends new photos
+     * Unlimited calls(captcha not required)
+     * should not be called for more than 150 items at time
+     *
+     * @param from first entry no.
+     * @param to   last entry no.
+     * @return new photos
+     * @throws java.io.IOException    in case of connection problems
+     * @throws org.json.JSONException
+     */
+    public List<Photo> getUpdatesPhotos(int from, int to) throws IOException, JSONException {
+        String url = UrlBuilder.makeUrl("updates_photos", from, to);
+        List<Photo> photos = new LinkedList<Photo>();
+        JSONObject statusesJson = new JSONObject(getTextFromUrl(url));
+        if (!statusesJson.getString("d").equals("null")) {
+            JSONArray statusesArray = statusesJson.getJSONArray("d");
+            for (int i = 0; i < statusesArray.length(); i++) {
+                JSONArray photoInfo = (JSONArray) statusesArray.get(i);
+                Photo photo = Photo.fromJson(photoInfo);
+                if (photo != null)
+                    photos.add(photo);
+            }
+        }
+        return photos;
+    }
+
     public List<Status> getStatusHistory(long id, int from, int to, long ts) throws IOException, JSONException {
         List<Status> statuses = new LinkedList<Status>();
         String url = UrlBuilder.makeUrl("activity", id, from, to) + (ts == 0 ? "" : ("&ts=" + ts));
@@ -608,6 +640,7 @@ public class VkontakteAPI {
         String result = null;
         if (httpEntity != null) {
             result = EntityUtils.toString(httpEntity);
+            System.out.println("result = " + result);
             httpEntity.consumeContent();
             if (result.equals(SESSION_EXPIRED)) {
                 System.out.println("session expired!");
