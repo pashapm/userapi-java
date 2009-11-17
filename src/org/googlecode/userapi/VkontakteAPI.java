@@ -381,8 +381,8 @@ public class VkontakteAPI {
      * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException
      */
-    public List<Message> getWallMessages(long id, int from, int to) throws IOException, JSONException, PageHiddenException {
-        List<Message> messages = new LinkedList<Message>();
+    public List<WallMessage> getWallMessages(long id, int from, int to) throws IOException, JSONException, PageHiddenException {
+        List<WallMessage> messages = new LinkedList<WallMessage>();
         String url = UrlBuilder.makeUrl("wall", id, from, to);
         String jsonText = getTextFromUrlOrThrow(url);
         JSONObject messagesJson = new JSONObject(jsonText);
@@ -391,7 +391,7 @@ public class VkontakteAPI {
         JSONArray messagesArray = messagesJson.getJSONArray("d");
         for (int i = 0; i < messagesArray.length(); i++) {
             JSONArray messageJson = (JSONArray) messagesArray.get(i);
-            messages.add(new Message(messageJson, this));
+            messages.add(new WallMessage(messageJson, this));
         }
         return messages;
     }
