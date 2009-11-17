@@ -37,6 +37,13 @@ public class VkontakteAPI {
     private static final String SESSION_EXPIRED = "{\"ok\":-1}";
     private static final String CAPTCHA_REQUIRED = "{\"ok\":-2}";
     private static final String FRIENDS_HIDDEN = "{\"ok\":-3}";
+
+
+    private static final String LOGIN_INCORRECT = "sid=-1";
+    private static final String CAPTCHA_INCORRECT = "sid=-2";
+    private static final String LOGIN_INCORRECT_CAPTCHA_REQUIRED = "sid=-3";
+    private static final String LOGIN_INCORRECT_CAPTCHA_NOT_REQUIRED = "sid=-4";
+
     private CaptchaHandler captchaHandler;
     private Credentials credentials;
 
@@ -111,6 +118,7 @@ public class VkontakteAPI {
         HttpGet get = new HttpGet(urlString);
         HttpResponse response = httpClient.execute(get);
         String location = response.getFirstHeader("Location").getValue();
+        System.out.println("location = " + location);
         String sid = location.substring(location.indexOf("0;sid=") + "0;sid=".length());
         List<Cookie> cookies = httpClient.getCookieStore().getCookies();
         String remixpassword = null;
@@ -327,9 +335,9 @@ public class VkontakteAPI {
 
     public List<Message> getPrivateMessages(long id, int from, int to, privateMessagesTypes type) throws IOException, JSONException {
         List<Message> messages = new LinkedList<Message>();
-//        URL url = new URL("http://userapi.com/data?act=" + type + "&from=" + from + "&to=" + to + "&id=" + id + "&sid=" + credentials.getSession());
-        String url = UrlBuilder.makeUrl(type.name(), id, from, to);
+        String url = UrlBuilder.makeUrl(type.name(), id, from, to) + "&ts=448000002";
         String jsonText = getTextFromUrl(url);
+        System.out.println(jsonText);
         JSONObject messagesJson = new JSONObject(jsonText);
 //        Long count = messagesJson.getLong("n");
         Long history = messagesJson.getLong("h");
@@ -399,7 +407,7 @@ public class VkontakteAPI {
     /**
      * Delete message
      *
-     * @param userId - user id
+     * @param userId    - user id
      * @param messageId - message id
      * @return true if message was successfully deleted and false otherwise
      * @throws IOException
@@ -474,6 +482,31 @@ public class VkontakteAPI {
             }
         }
         return statuses;
+    }
+
+    /**
+     * Returns friends new friends updates
+     * Unlimited calls(captcha not required)
+     * should not be called for more than 150 items at time
+     *
+     * @param from first entry no.
+     * @param to   last entry no.
+     * @return new friends
+     * @throws java.io.IOException    in case of connection problems
+     * @throws org.json.JSONException
+     */
+    public List<User> getUpdatesFriends(int from, int to) throws IOException, JSONException {
+        String url = UrlBuilder.makeUrl("updates_friends", from, to);
+        List<User> friends = new LinkedList<User>();
+        JSONObject statusesJson = new JSONObject(getTextFromUrl(url));
+        if (!statusesJson.getString("d").equals("null")) {
+            JSONArray statusesArray = statusesJson.getJSONArray("d");
+            for (int i = 0; i < statusesArray.length(); i++) {
+                JSONArray messageJson = (JSONArray) statusesArray.get(i);
+                friends.add(new User(messageJson, this));
+            }
+        }
+        return friends;
     }
 
     public List<Status> getStatusHistory(long id, int from, int to, long ts) throws IOException, JSONException {
