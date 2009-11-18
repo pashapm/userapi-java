@@ -8,6 +8,7 @@ import java.util.Map;
  */
 public class UrlBuilder {
     public static final String urlBase = "http://userapi.com/";
+    public static final String loginUrlBase = "http://login.userapi.com/";
 
     public static String makeUrl(String action) {
         String url = urlBase + "data?act=" + action;
@@ -39,6 +40,21 @@ public class UrlBuilder {
 
     public static String makeUrl() {
         String url = urlBase + "data?";
+        return url;
+    }
+
+    public static String makeLoginUrl() {
+        String url = urlBase + "auth?";
+        return url;
+    }
+
+    public static String makeLoginUrl(long siteId) {
+        String url = loginUrlBase + "auth?" + "site=" + siteId;
+        return url;
+    }
+
+    public static String makeLoginUrl(long siteId, String action) {
+        String url = loginUrlBase + "auth?login=" + action + "&site=" + siteId;
         return url;
     }
 }
