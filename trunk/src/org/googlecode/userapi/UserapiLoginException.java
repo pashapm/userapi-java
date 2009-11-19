@@ -11,25 +11,31 @@ public class UserapiLoginException extends Exception {
     private static final String LOGIN_INCORRECT_CAPTCHA_NOT_REQUIRED = "-4";
 
     private ErrorType type;
+    private String sid;
 
-    public UserapiLoginException(ErrorType type) {
+    public UserapiLoginException(ErrorType type, String sid) {
         this.type = type;
+        this.sid = sid;
     }
 
     public static UserapiLoginException fromSid(String sid) {
         if (sid.equals(UserapiLoginException.LOGIN_INCORRECT))
-            return new UserapiLoginException(ErrorType.LOGIN_INCORRECT);
+            return new UserapiLoginException(ErrorType.LOGIN_INCORRECT, sid);
         if (sid.equals(UserapiLoginException.CAPTCHA_INCORRECT))
-            return new UserapiLoginException(ErrorType.CAPTCHA_INCORRECT);
+            return new UserapiLoginException(ErrorType.CAPTCHA_INCORRECT, sid);
         if (sid.equals(UserapiLoginException.LOGIN_INCORRECT_CAPTCHA_REQUIRED))
-            return new UserapiLoginException(ErrorType.LOGIN_INCORRECT_CAPTCHA_REQUIRED);
+            return new UserapiLoginException(ErrorType.LOGIN_INCORRECT_CAPTCHA_REQUIRED, sid);
         if (sid.equals(UserapiLoginException.LOGIN_INCORRECT_CAPTCHA_NOT_REQUIRED))
-            return new UserapiLoginException(ErrorType.LOGIN_INCORRECT_CAPTCHA_NOT_REQUIRED);
+            return new UserapiLoginException(ErrorType.LOGIN_INCORRECT_CAPTCHA_NOT_REQUIRED, sid);
         return null;
     }
 
     public ErrorType getType() {
         return type;
+    }
+
+    public String getSid() {
+        return sid;
     }
 
     public static enum ErrorType {
