@@ -1,25 +1,25 @@
 package org.googlecode.userapi;
 
 public class ChangesHistory {
-    private long messagesCount;
-    private long friendsCount;
-    private long photosCount;
+    private int messagesCount;
+    private int friendsCount;
+    private int photosCount;
 
-    public ChangesHistory(long messagesCount, long friendsCount, long photosCount) {
+    public ChangesHistory(int messagesCount, int friendsCount, int photosCount) {
         this.messagesCount = messagesCount;
         this.friendsCount = friendsCount;
         this.photosCount = photosCount;
     }
 
-    public long getMessagesCount() {
+    public int getMessagesCount() {
         return messagesCount;
     }
 
-    public long getFriendsCount() {
+    public int getFriendsCount() {
         return friendsCount;
     }
 
-    public long getPhotosCount() {
+    public int getPhotosCount() {
         return photosCount;
     }
 
