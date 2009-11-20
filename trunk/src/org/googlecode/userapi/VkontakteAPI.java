@@ -332,16 +332,11 @@ public class VkontakteAPI {
         return photos;
     }
 
-    public List<Photo> getMyNewPhotos(long id, int from, int to, photosTypes type) throws IOException, JSONException, UserapiLoginException {
+    public List<Photo> getMyNewPhotos(int count) throws IOException, JSONException, UserapiLoginException {
         List<Photo> photos = new LinkedList<Photo>();
-        String url = UrlBuilder.makeUrl(type.name(), id, from, to);
+        String url = UrlBuilder.makeUrl(photosTypes.photos_new.name(), -1, 0, count);
         String jsonText = getTextFromUrl(url);
-        JSONArray photosJson;
-        if (type == photosTypes.photos) {
-            photosJson = new JSONArray(jsonText);
-        } else {
-            photosJson = new JSONObject(jsonText).getJSONArray("d");
-        }
+        JSONArray photosJson = new JSONObject(jsonText).getJSONArray("d");
         for (int i = 0; i < photosJson.length(); i++) {
             JSONArray photoInfo = (JSONArray) photosJson.get(i);
             Photo photo = Photo.fromJson(photoInfo);
@@ -471,9 +466,9 @@ public class VkontakteAPI {
         String url = UrlBuilder.makeUrl("history");
         String jsonText = getTextFromUrl(url);
         JSONObject messagesJson = new JSONObject(jsonText);
-        long messagesCount = messagesJson.has("nm") ? messagesJson.getLong("nm") : 0;
-        long friendsCount = messagesJson.has("nf") ? messagesJson.getLong("nf") : 0;
-        long photosCount = messagesJson.has("nph") ? messagesJson.getLong("nph") : 0;
+        int messagesCount = messagesJson.has("nm") ? messagesJson.getInt("nm") : 0;
+        int friendsCount = messagesJson.has("nf") ? messagesJson.getInt("nf") : 0;
+        int photosCount = messagesJson.has("nph") ? messagesJson.getInt("nph") : 0;
         return new ChangesHistory(messagesCount, friendsCount, photosCount);
     }
 
@@ -660,6 +655,7 @@ public class VkontakteAPI {
         String result = null;
         if (httpEntity != null) {
             result = EntityUtils.toString(httpEntity);
+            System.out.println("result = " + result);
             httpEntity.consumeContent();
             if (result.equals(SESSION_EXPIRED)) {
                 System.out.println("session expired!");
