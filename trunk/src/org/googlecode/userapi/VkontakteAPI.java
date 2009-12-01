@@ -348,7 +348,7 @@ public class VkontakteAPI {
 
     public List<Message> getPrivateMessages(long id, int from, int to, privateMessagesTypes type) throws IOException, JSONException, UserapiLoginException {
         List<Message> messages = new LinkedList<Message>();
-        String url = UrlBuilder.makeUrl(type.name(), id, from, to) + "&ts=448000002";
+        String url = UrlBuilder.makeUrl(type.name(), id, from, to);
         String jsonText = getTextFromUrl(url);
         System.out.println(jsonText);
         JSONObject messagesJson = new JSONObject(jsonText);
