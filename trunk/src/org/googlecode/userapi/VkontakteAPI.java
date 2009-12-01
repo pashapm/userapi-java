@@ -353,9 +353,9 @@ public class VkontakteAPI {
         System.out.println(jsonText);
         JSONObject messagesJson = new JSONObject(jsonText);
 //        Long count = messagesJson.getLong("n");
-        Long history = messagesJson.getLong("h");
+//        Long history = messagesJson.getLong("h");
 //        System.out.println("count:" + count);
-        System.out.println("history:" + history);
+//        System.out.println("history:" + history);
         JSONArray messagesArray = messagesJson.getJSONArray("d");
         for (int i = 0; i < messagesArray.length(); i++) {
             JSONArray messageJson;
