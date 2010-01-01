@@ -362,13 +362,7 @@ public class VkontakteAPI {
 //        System.out.println("history:" + history);
         JSONArray messagesArray = messagesJson.getJSONArray("d");
         for (int i = 0; i < messagesArray.length(); i++) {
-            JSONArray messageJson;
-            if (type == privateMessagesTypes.message || type == privateMessagesTypes.inbox) {
-                messageJson = (JSONArray) messagesArray.get(i);
-            } else {
-                JSONObject element = messagesArray.getJSONObject(i);
-                messageJson = JSONHelper.objectToArray(element);
-            }
+            JSONArray messageJson = (JSONArray) messagesArray.get(i);
             messages.add(new Message(messageJson, this));
         }
         //todo: total count
