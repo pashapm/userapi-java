@@ -363,7 +363,7 @@ public class VkontakteAPI {
         JSONArray messagesArray = messagesJson.getJSONArray("d");
         for (int i = 0; i < messagesArray.length(); i++) {
             JSONArray messageJson;
-            if (type == privateMessagesTypes.message) {
+            if (type == privateMessagesTypes.message || type == privateMessagesTypes.inbox) {
                 messageJson = (JSONArray) messagesArray.get(i);
             } else {
                 JSONObject element = messagesArray.getJSONObject(i);
