@@ -194,6 +194,8 @@ public class VkontakteAPI {
         JSONArray fr;
         if (type == friendsTypes.friends_new) {
             JSONObject object = new JSONObject(jsonText);
+            int count = object.getInt("n");
+            if (count==0) return friends;
             fr = object.getJSONArray("d");
         } else {
             fr = new JSONArray(jsonText);
@@ -219,7 +221,9 @@ public class VkontakteAPI {
         int current = 0;
         int fetchSize = 1024;
         List<User> friends = new LinkedList<User>();
-        while (friends.addAll(getFriends(id, current, current + fetchSize, type))) {
+        List<User> friendList;
+        while ((friendList = getFriends(id, current, current + fetchSize, type)).size() > fetchSize) {
+            friends.addAll(friendList);
             current += fetchSize;
         }
         return friends;
