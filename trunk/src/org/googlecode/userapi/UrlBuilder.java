@@ -28,7 +28,7 @@ public class UrlBuilder {
     public static String makeUrl(String action, Map<String, String> params) {
         StringBuilder url = new StringBuilder(urlBase + "data?act=" + action);
         for (Map.Entry<String, String> entry : params.entrySet()) {
-            url.append("&" + entry.getKey() + "=" + entry.getValue());
+            url.append("&").append(entry.getKey()).append("=").append(entry.getValue());
         }
         return url.toString();
     }
