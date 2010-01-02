@@ -3,8 +3,8 @@ package org.googlecode.userapi;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Date;
 import java.util.Calendar;
+import java.util.Date;
 
 public class ProfileInfo {
     protected long id;
