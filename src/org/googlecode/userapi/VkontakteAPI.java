@@ -479,8 +479,7 @@ public class VkontakteAPI {
 
     public String getLimits(String action) throws IOException, JSONException, UserapiLoginException {
         String url = UrlBuilder.makeUrl("get_limits");
-        String s = getTextFromUrl(url);
-        return s;
+        return getTextFromUrl(url);
     }
 
     /**
