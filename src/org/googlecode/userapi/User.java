@@ -6,7 +6,7 @@ import org.json.JSONException;
 import java.io.IOException;
 
 public class User {
-	private long userId;
+    private long userId;
     private String userName;
     private String userPhotoUrl;
     private String userPhotoUrlSmall;
@@ -15,8 +15,8 @@ public class User {
     private VkontakteAPI api;
 
     //sometimes we don't get any avatar. then use it as default
-    public static final String STUB_URL = "http://vkontakte.ru/images/question_b.gif"; 
-    
+    public static final String STUB_URL = "http://vkontakte.ru/images/question_b.gif";
+
     public User(JSONArray userInfo, VkontakteAPI api) throws JSONException {
         this.api = api;
         userId = userInfo.getLong(0);

@@ -78,29 +78,29 @@ public class Message {
         return read;
     }
 
-	public void setId(long id) {
-		this.id = id;
-	}
+    public void setId(long id) {
+        this.id = id;
+    }
 
-	public void setDate(Date date) {
-		this.date = date;
-	}
+    public void setDate(Date date) {
+        this.date = date;
+    }
 
-	public void setText(String text) {
-		this.text = text;
-	}
+    public void setText(String text) {
+        this.text = text;
+    }
 
-	public void setSender(User sender) {
-		this.sender = sender;
-	}
+    public void setSender(User sender) {
+        this.sender = sender;
+    }
 
-	public void setReceiver(User receiver) {
-		this.receiver = receiver;
-	}
+    public void setReceiver(User receiver) {
+        this.receiver = receiver;
+    }
 
-	public void setRead(boolean read) {
-		this.read = read;
-	}
+    public void setRead(boolean read) {
+        this.read = read;
+    }
 
 }
 

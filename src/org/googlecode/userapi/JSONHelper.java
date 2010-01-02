@@ -1,8 +1,8 @@
 package org.googlecode.userapi;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class JSONHelper {
     public static JSONArray objectToArray(JSONObject object) throws JSONException {
