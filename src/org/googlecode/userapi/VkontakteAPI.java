@@ -226,10 +226,11 @@ public class VkontakteAPI {
         int fetchSize = 1024;
         List<User> friends = new LinkedList<User>();
         List<User> friendList;
-        while ((friendList = getFriends(id, current, current + fetchSize, type)).size() > fetchSize) {
+        do {
+            friendList = getFriends(id, current, current + fetchSize, type);
             friends.addAll(friendList);
             current += fetchSize;
-        }
+        } while (friendList.size() == fetchSize);
         return friends;
     }
 
