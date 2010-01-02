@@ -43,6 +43,8 @@ public class VkontakteAPI {
 
     private String login;
     private String pass;
+    private static final String EMPTY_JSON_OBJECT = "{}";
+    private static final JSONArray EMPTY_JSON_ARRAY = new JSONArray();
 
     public String getRemix() {
         return remix;
@@ -191,18 +193,20 @@ public class VkontakteAPI {
 
     private List<User> makeFriendsFromString(friendsTypes type, String jsonText) throws JSONException {
         List<User> friends = new LinkedList<User>();
-        JSONArray fr;
-        if (type == friendsTypes.friends_new) {
-            JSONObject object = new JSONObject(jsonText);
-            int count = object.getInt("n");
-            if (count==0) return friends;
-            fr = object.getJSONArray("d");
-        } else {
-            fr = new JSONArray(jsonText);
-        }
-        for (int i = 0; i < fr.length(); i++) {
-            JSONArray userInfo = (JSONArray) fr.get(i);
-            friends.add(new User(userInfo, this));
+        if (!jsonText.equals(EMPTY_JSON_OBJECT)) {
+            JSONArray fr = EMPTY_JSON_ARRAY;
+            if (type == friendsTypes.friends_new) {
+                JSONObject object = new JSONObject(jsonText);
+                if (object.getInt("n") != 0) {
+                    fr = object.getJSONArray("d");
+                }
+            } else {
+                fr = new JSONArray(jsonText);
+            }
+            for (int i = 0; i < fr.length(); i++) {
+                JSONArray userInfo = (JSONArray) fr.get(i);
+                friends.add(new User(userInfo, this));
+            }
         }
         return friends;
     }
