@@ -348,12 +348,15 @@ public class VkontakteAPI {
         List<Photo> photos = new LinkedList<Photo>();
         String url = UrlBuilder.makeUrl(photosTypes.photos_new.name(), -1, 0, count);
         String jsonText = getTextFromUrl(url);
-        JSONArray photosJson = new JSONObject(jsonText).getJSONArray("d");
-        for (int i = 0; i < photosJson.length(); i++) {
-            JSONArray photoInfo = (JSONArray) photosJson.get(i);
-            Photo photo = Photo.fromJson(photoInfo);
-            if (photo != null)
-                photos.add(photo);
+        JSONObject photosJson = new JSONObject(jsonText);
+        if (!photosJson.getString("d").equals(EMPTY_JSON_OBJECT)) {
+            JSONArray photosArray = photosJson.getJSONArray("d");
+            for (int i = 0; i < photosArray.length(); i++) {
+                JSONArray photoInfo = (JSONArray) photosArray.get(i);
+                Photo photo = Photo.fromJson(photoInfo);
+                if (photo != null)
+                    photos.add(photo);
+            }
         }
         return photos;
     }
@@ -365,14 +368,14 @@ public class VkontakteAPI {
         JSONObject messagesJson = new JSONObject(jsonText);
 //        Long count = messagesJson.getLong("n");
 //        Long history = messagesJson.getLong("h");
-//        System.out.println("count:" + count);
-//        System.out.println("history:" + history);
-        JSONArray messagesArray = messagesJson.getJSONArray("d");
-        for (int i = 0; i < messagesArray.length(); i++) {
-            JSONArray messageJson = (JSONArray) messagesArray.get(i);
-            messages.add(new Message(messageJson, this));
+        if (!messagesJson.getString("d").equals(EMPTY_JSON_OBJECT)) {
+            JSONArray messagesArray = messagesJson.getJSONArray("d");
+            for (int i = 0; i < messagesArray.length(); i++) {
+                JSONArray messageJson = (JSONArray) messagesArray.get(i);
+                messages.add(new Message(messageJson, this));
+            }
+            //todo: total count
         }
-        //todo: total count
         return messages;
     }
 
