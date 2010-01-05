@@ -362,7 +362,6 @@ public class VkontakteAPI {
         List<Message> messages = new LinkedList<Message>();
         String url = UrlBuilder.makeUrl(type.name(), id, from, to);
         String jsonText = getTextFromUrl(url);
-        System.out.println(jsonText);
         JSONObject messagesJson = new JSONObject(jsonText);
 //        Long count = messagesJson.getLong("n");
 //        Long history = messagesJson.getLong("h");
