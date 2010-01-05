@@ -638,7 +638,6 @@ public class VkontakteAPI {
         if (httpEntity != null) {
             result = EntityUtils.toString(httpEntity);
             httpEntity.consumeContent();
-            System.out.println(result);
             if (result.equals(FRIENDS_HIDDEN)) {
                 throw new PageHiddenException();
             } else if (result.equals(SESSION_EXPIRED)) {
@@ -660,7 +659,6 @@ public class VkontakteAPI {
         String result = null;
         if (httpEntity != null) {
             result = EntityUtils.toString(httpEntity);
-            System.out.println("result = " + result);
             httpEntity.consumeContent();
             if (result.equals(SESSION_EXPIRED)) {
                 System.out.println("session expired!");
