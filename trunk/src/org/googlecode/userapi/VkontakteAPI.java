@@ -46,6 +46,11 @@ public class VkontakteAPI {
     private static final String EMPTY_JSON_OBJECT = "{}";
     private static final JSONArray EMPTY_JSON_ARRAY = new JSONArray();
 
+    /**
+     * Used in workaround for userapi bug.
+     */
+    private int wasMessages = 0;
+
     public String getRemix() {
         return remix;
     }
@@ -464,17 +469,28 @@ public class VkontakteAPI {
 
     /**
      * Returns new messages, new friends and new photos counters as ChagesHistory
-     * Unlimited calls(captcha not required)
+     * Unlimited calls(captcha not required).
      *
-     * @return new messages, new friends and new photos counters as ChagesHistory
-     * @throws java.io.IOException    in case of connection problems
-     * @throws org.json.JSONException
+     * @return new messages, new friends and new photos counters as ChagesHistory.
+     * @throws java.io.IOException in case of connection problems.
+     * @throws org.json.JSONException in case of JSON parsing problems.
+     * @throws UserapiLoginException in case of login problems.
      */
     public ChangesHistory getChangesHistory() throws IOException, JSONException, UserapiLoginException {
         String url = UrlBuilder.makeUrl("history");
         String jsonText = getTextFromUrl(url);
         JSONObject messagesJson = new JSONObject(jsonText);
         int messagesCount = messagesJson.has("nm") ? messagesJson.getInt("nm") : 0;
+
+        /*Workaround for bug in userapi: if user has several unread messages and he/she reads one of them, then next
+          request to userapi will return zero unread messages, and second request will return correct number*/
+        if (wasMessages > 1 && messagesCount == 0) {
+            jsonText = getTextFromUrl(url);
+            messagesJson = new JSONObject(jsonText);
+            messagesCount = messagesJson.has("nm") ? messagesJson.getInt("nm") : 0;
+        }
+        wasMessages = messagesCount;
+
         int friendsCount = messagesJson.has("nf") ? messagesJson.getInt("nf") : 0;
         int photosCount = messagesJson.has("nph") ? messagesJson.getInt("nph") : 0;
         return new ChangesHistory(messagesCount, friendsCount, photosCount);
