@@ -78,7 +78,8 @@ public class VkontakteAPI {
         return httpClient;
     }
 
-    private VkontakteAPI() {
+    @SuppressWarnings("unused")
+	private VkontakteAPI() {
     }
 
     public VkontakteAPI(int siteId) {
