@@ -39,9 +39,13 @@ public class UserapiLoginException extends Exception {
     }
 
     public static enum ErrorType {
+        /**Incorrect email or password*/
         LOGIN_INCORRECT,
+        /**Incorrect CAPTCHA code while submitting email and password*/
         CAPTCHA_INCORRECT,
+        /**Incorrect email or password, next login attempt must be submitted with a CAPTCHA code.*/
         LOGIN_INCORRECT_CAPTCHA_REQUIRED,
+        /**Incorrect email or password, CAPTCHA is not required*/
         LOGIN_INCORRECT_CAPTCHA_NOT_REQUIRED
     }
 
