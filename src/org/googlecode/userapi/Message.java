@@ -6,6 +6,7 @@ import org.json.JSONException;
 import java.util.Date;
 
 public class Message {
+    
     private long id;
     private Date date;
     private String text;
@@ -17,11 +18,15 @@ public class Message {
     public Message(JSONArray messageInfo, VkontakteAPI api) throws JSONException {
         id = messageInfo.getLong(0);
         date = new Date(1000 * messageInfo.getLong(1));
-        JSONArray textJsonArray = messageInfo.getJSONArray(2);
-        text = textJsonArray.getString(0);
-        if (textJsonArray.length() > 1) {
-//            System.out.println(textJsonArray);
-            //todo: handle if any?
+
+        Object textJson = messageInfo.get(2);
+        if (textJson instanceof JSONArray) {
+            JSONArray textJsonArray = (JSONArray) textJson;
+            text = textJsonArray.getString(0);
+            if (textJsonArray.length() > 1) {
+//               System.out.println(textJsonArray);
+                //todo: handle if any?
+            }
         }
         sender = new User(messageInfo.getJSONArray(3), api);
         //System.out.println("Message sender: "+sender.toString());

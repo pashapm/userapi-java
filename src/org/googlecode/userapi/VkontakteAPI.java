@@ -367,6 +367,21 @@ public class VkontakteAPI {
         return photos;
     }
 
+    public List<MessageHistory> getPrivateMessagesHistory(long timestamp) throws IOException, JSONException, UserapiLoginException {
+        List<MessageHistory> historyList = new LinkedList<MessageHistory>();
+        String url = UrlBuilder.makeUrl(privateMessagesTypes.message.name(), myId, timestamp);
+        String jsonText = getTextFromUrl(url);
+        JSONObject historyJson = new JSONObject(jsonText);
+        if (!historyJson.getString("h").equals(EMPTY_JSON_OBJECT)) {
+            JSONArray historyArray = historyJson.getJSONArray("h");
+            for (int i = 0; i < historyArray.length(); i++) {
+                JSONArray history = (JSONArray) historyArray.get(i);
+                historyList.add(new MessageHistory(history, this));
+            }
+        }
+        return historyList;
+    }
+
     public List<Message> getPrivateMessages(long id, int from, int to, privateMessagesTypes type) throws IOException, JSONException, UserapiLoginException {
         List<Message> messages = new LinkedList<Message>();
         String url = UrlBuilder.makeUrl(type.name(), id, from, to);
@@ -383,6 +398,31 @@ public class VkontakteAPI {
             //todo: total count
         }
         return messages;
+    }
+
+    public MessagesStruct getPrivateMessagesStruct(long id, int from, int to, privateMessagesTypes type) throws IOException, JSONException, UserapiLoginException {
+        List<Message> messages = new LinkedList<Message>();
+        String url = UrlBuilder.makeUrl(type.name(), id, from, to);
+        String jsonText = getTextFromUrl(url);
+        JSONObject messagesJson = new JSONObject(jsonText);
+        int count = messagesJson.getInt("n");
+        long timestamp = messagesJson.getLong("h");
+        if (!messagesJson.getString("d").equals(EMPTY_JSON_OBJECT)) {
+            JSONArray messagesArray = messagesJson.getJSONArray("d");
+            for (int i = 0; i < messagesArray.length(); i++) {
+                JSONArray messageJson = (JSONArray) messagesArray.get(i);
+                messages.add(new Message(messageJson, this));
+            }
+        }
+        return new MessagesStruct(count, timestamp, messages);
+    }
+
+    public MessagesStruct getInboxMessagesStruct(int from, int to) throws IOException, JSONException, UserapiLoginException {
+        return getPrivateMessagesStruct(myId, from, to, privateMessagesTypes.inbox);
+    }
+
+    public MessagesStruct getOutboxMessagesStruct(int from, int to) throws IOException, JSONException, UserapiLoginException {
+        return getPrivateMessagesStruct(myId, from, to, privateMessagesTypes.outbox);
     }
 
     public List<Message> getInbox(int from, int to) throws IOException, JSONException, UserapiLoginException {
