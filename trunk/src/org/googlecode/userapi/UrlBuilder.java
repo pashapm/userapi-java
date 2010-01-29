@@ -20,6 +20,10 @@ public class UrlBuilder {
         return url;
     }
 
+    public static String makeUrl(String action, long id, long timestamp) {
+        return urlBase + "data?act=" + action + "&id=" + id + "&ts=" + timestamp;
+    }
+
     public static String makeUrl(String action, long id, int from, int to) {
         String url = urlBase + "data?act=" + action + "&from=" + from + "&to=" + to + "&id=" + id;
         return url;
