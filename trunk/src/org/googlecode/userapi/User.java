@@ -18,6 +18,9 @@ public class User {
     public static final String STUB_URL = "http://vkontakte.ru/images/question_b.gif";
 
     public User(JSONArray userInfo, VkontakteAPI api) throws JSONException {
+        if (userInfo.isNull(0))
+            return;
+
         this.api = api;
         userId = userInfo.getLong(0);
         int length = userInfo.length();
