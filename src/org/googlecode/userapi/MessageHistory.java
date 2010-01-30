@@ -10,7 +10,7 @@ import org.json.JSONException;
  */
 public class MessageHistory {
 
-    public enum Type {add, del, restore, read}
+    public enum Type {add, del, undel, restore, read}
 
     private long timestamp;
     private Type type;
