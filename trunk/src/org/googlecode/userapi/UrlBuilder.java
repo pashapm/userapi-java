@@ -42,6 +42,31 @@ public class UrlBuilder {
         return url;
     }
 
+    public static String makeUrl(Timestamps timestamps) {
+        StringBuilder url = new StringBuilder(urlBase).append("data?act=history");
+
+        if (timestamps != null) {
+            if (timestamps.getWallTs() != -1)
+                url.append("&wall=").append(timestamps.getWallTs());
+            if (timestamps.getActivitiesTs() != -1)
+                url.append("&activity=").append(timestamps.getActivitiesTs());
+            if (timestamps.getMessagesTs() != -1)
+                url.append("&message=").append(timestamps.getMessagesTs());
+            if (timestamps.getPhotosUpdatesTs() != -1)
+                url.append("&updates_photos=").append(timestamps.getPhotosUpdatesTs());
+            if (timestamps.getTagedPhotosUpdatesTs() != -1)
+                url.append("&updates_​tagged_photos=").append(timestamps.getTagedPhotosUpdatesTs());
+            if (timestamps.getFriendsTs() != -1)
+                url.append("&updates_friends=").append(timestamps.getFriendsTs());
+            if (timestamps.getActivitiesUpdatesTs() != -1)
+                url.append("&updates_activity=").append(timestamps.getActivitiesUpdatesTs());
+            if (timestamps.getPhotosCommentsTs() != -1)
+                url.append("&photos_comments=").append(timestamps.getPhotosCommentsTs());
+        }
+
+        return url.toString();
+    }
+
     public static String makeUrl() {
         String url = urlBase + "data?";
         return url;

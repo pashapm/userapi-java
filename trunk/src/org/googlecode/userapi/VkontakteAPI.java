@@ -372,13 +372,9 @@ public class VkontakteAPI {
         String url = UrlBuilder.makeUrl(privateMessagesTypes.message.name(), myId, timestamp);
         String jsonText = getTextFromUrl(url);
         JSONObject historyJson = new JSONObject(jsonText);
-        if (!historyJson.getString("h").equals(EMPTY_JSON_OBJECT)) {
-            JSONArray historyArray = historyJson.getJSONArray("h");
-            for (int i = 0; i < historyArray.length(); i++) {
-                JSONArray history = (JSONArray) historyArray.get(i);
-                historyList.add(new MessageHistory(history, this));
-            }
-        }
+        if (!historyJson.getString("h").equals(EMPTY_JSON_OBJECT))
+            historyList = MessageHistory.getMessagesHistory(historyJson.getJSONArray("h"), this);
+        
         return historyList;
     }
 
@@ -509,24 +505,36 @@ public class VkontakteAPI {
     }
 
     /**
-     * Returns new messages, new friends and new photos counters as ChagesHistory
+     * Returns new messages, new friends, new photos counters and history changes as ChagesHistory
      * Unlimited calls(captcha not required).
      *
+     * @param timestamps timestamps for messages, photos, comments, etc.
      * @return new messages, new friends and new photos counters as ChagesHistory.
      * @throws java.io.IOException in case of connection problems.
      * @throws org.json.JSONException in case of JSON parsing problems.
      * @throws UserapiLoginException in case of login problems.
      */
-    public ChangesHistory getChangesHistory() throws IOException, JSONException, UserapiLoginException {
-        String url = UrlBuilder.makeUrl("history");
+    public ChangesHistory getChangesHistory(Timestamps timestamps) throws IOException, JSONException, UserapiLoginException {
+        ChangesHistory history = new ChangesHistory();
+
+        String url = UrlBuilder.makeUrl(timestamps);
         String jsonText = getTextFromUrl(url);
         JSONObject messagesJson = new JSONObject(jsonText);
+
+        // Getting history changes
+        if (messagesJson.has("message")) {
+            JSONObject historyJson = messagesJson.getJSONObject("message");
+            if (!historyJson.getString("h").equals(EMPTY_JSON_OBJECT))
+                history.setMessagesHistory(MessageHistory.getMessagesHistory(historyJson.getJSONArray("h"), this));
+        }
+
+        // Counters
         int messagesCount = messagesJson.has("nm") ? messagesJson.getInt("nm") : 0;
 
         /*Workaround for bug in userapi: if user has several unread messages and he/she reads one of them, then next
           request to userapi will return zero unread messages, and second request will return correct number*/
         if (wasMessages > 1 && messagesCount == 0) {
-            jsonText = getTextFromUrl(url);
+            jsonText = getTextFromUrl(UrlBuilder.makeUrl("history"));
             messagesJson = new JSONObject(jsonText);
             messagesCount = messagesJson.has("nm") ? messagesJson.getInt("nm") : 0;
         }
@@ -534,7 +542,16 @@ public class VkontakteAPI {
 
         int friendsCount = messagesJson.has("nf") ? messagesJson.getInt("nf") : 0;
         int photosCount = messagesJson.has("nph") ? messagesJson.getInt("nph") : 0;
-        return new ChangesHistory(messagesCount, friendsCount, photosCount);
+
+        history.setFriendsCount(friendsCount);
+        history.setMessagesCount(messagesCount);
+        history.setPhotosCount(photosCount);
+
+        return history;
+    }
+    
+    public ChangesHistory getChangesHistory() throws IOException, JSONException, UserapiLoginException {
+        return getChangesHistory(null);
     }
 
     //todo!
