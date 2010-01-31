@@ -1,9 +1,14 @@
 package org.googlecode.userapi;
 
+import java.util.List;
+
 public class ChangesHistory implements Comparable<ChangesHistory> {
+    
     private int messagesCount;
     private int friendsCount;
     private int photosCount;
+
+    private List<MessageHistory> messagesHistory = null;
 
     public ChangesHistory() {
         messagesCount = 0;
@@ -21,12 +26,32 @@ public class ChangesHistory implements Comparable<ChangesHistory> {
         return messagesCount;
     }
 
+    public void setMessagesCount(int messagesCount) {
+        this.messagesCount = messagesCount;
+    }
+
     public int getFriendsCount() {
         return friendsCount;
     }
 
+    public void setFriendsCount(int friendsCount) {
+        this.friendsCount = friendsCount;
+    }
+
     public int getPhotosCount() {
         return photosCount;
+    }
+
+    public void setPhotosCount(int photosCount) {
+        this.photosCount = photosCount;
+    }
+
+    public List<MessageHistory> getMessagesHistory() {
+        return messagesHistory;
+    }
+
+    public void setMessagesHistory(List<MessageHistory> messagesHistory) {
+        this.messagesHistory = messagesHistory;
     }
 
     /**
@@ -59,4 +84,5 @@ public class ChangesHistory implements Comparable<ChangesHistory> {
                 ", photosCount=" + photosCount +
                 '}';
     }
+
 }

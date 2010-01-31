@@ -3,6 +3,9 @@ package org.googlecode.userapi;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  *
  *
@@ -54,6 +57,16 @@ public class MessageHistory {
 
     public void setMessage(Message message) {
         this.message = message;
+    }
+
+    public static List<MessageHistory> getMessagesHistory(JSONArray historyArray, VkontakteAPI api) throws JSONException {
+        List<MessageHistory> historyList = new LinkedList<MessageHistory>();
+        for (int i = 0; i < historyArray.length(); i++) {
+            JSONArray mhistory = (JSONArray) historyArray.get(i);
+            historyList.add(new MessageHistory(mhistory, api));
+        }
+
+        return historyList;
     }
 
 }
