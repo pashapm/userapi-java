@@ -367,14 +367,52 @@ public class VkontakteAPI {
         return photos;
     }
 
-    public List<MessageHistory> getPrivateMessagesHistory(long timestamp) throws IOException, JSONException, UserapiLoginException {
+    private long getCurrentMessagesBaseTimestamp() throws IOException, UserapiLoginException, JSONException {
+        String url = UrlBuilder.makeUrl("inbox", myId, 0, 0);
+        String jsonText = getTextFromUrl(url);
+        JSONObject messagesJson = new JSONObject(jsonText);
+        return messagesJson.getLong("h") / 1000000 * 1000000 + 1;
+    }
+
+    /**
+     * Returns messages history objects based on JSON object or null if timestamp is wrong.
+     *
+     * @param historyObj object parsed from JSON response
+     * @return list of messages history or null if timestamp is wrong
+     * @throws JSONException in case if any JSON exceptions occur
+     */
+    public List<MessageHistory> getMessagesHistory(JSONObject historyObj) throws JSONException {
+        String ifString = historyObj.getString("h");
+
+        // Wrong timestamp. Unfortunately in Userapi timestamps are not real time stamps. Every new session has DIFFERENT
+        // timestamps. So if we got "false" we need to get new timestamp.
+        if ("false".equals(ifString))
+            return null;
+
         List<MessageHistory> historyList = new LinkedList<MessageHistory>();
+
+        if (!EMPTY_JSON_OBJECT.equals(ifString)) {
+            JSONArray historyArray = historyObj.getJSONArray("h");
+
+            for (int i = 0; i < historyArray.length(); i++) {
+                JSONArray mhistory = (JSONArray) historyArray.get(i);
+                historyList.add(new MessageHistory(mhistory, this));
+            }
+        }
+
+        return historyList;
+    }
+
+    public List<MessageHistory> getPrivateMessagesHistory(long timestamp) throws IOException, JSONException, UserapiLoginException {
         String url = UrlBuilder.makeUrl(privateMessagesTypes.message.name(), myId, timestamp);
         String jsonText = getTextFromUrl(url);
         JSONObject historyJson = new JSONObject(jsonText);
-        if (!historyJson.getString("h").equals(EMPTY_JSON_OBJECT))
-            historyList = MessageHistory.getMessagesHistory(historyJson.getJSONArray("h"), this);
-        
+
+        List<MessageHistory> historyList = getMessagesHistory(historyJson);
+        // If timestamp is wrong
+        if (historyList == null)
+            return getPrivateMessagesHistory(getCurrentMessagesBaseTimestamp());
+
         return historyList;
     }
 
@@ -524,8 +562,12 @@ public class VkontakteAPI {
         // Getting history changes
         if (messagesJson.has("message")) {
             JSONObject historyJson = messagesJson.getJSONObject("message");
-            if (!historyJson.getString("h").equals(EMPTY_JSON_OBJECT))
-                history.setMessagesHistory(MessageHistory.getMessagesHistory(historyJson.getJSONArray("h"), this));
+            List<MessageHistory> historyList = getMessagesHistory(historyJson);
+            // If timestamp is wrong
+            if (historyList == null)
+                historyList = getPrivateMessagesHistory(getCurrentMessagesBaseTimestamp());
+
+            history.setMessagesHistory(historyList);
         }
 
         // Counters
