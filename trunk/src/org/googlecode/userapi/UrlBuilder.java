@@ -55,7 +55,7 @@ public class UrlBuilder {
             if (timestamps.getPhotosUpdatesTs() != -1)
                 url.append("&updates_photos=").append(timestamps.getPhotosUpdatesTs());
             if (timestamps.getTagedPhotosUpdatesTs() != -1)
-                url.append("&updates_​tagged_photos=").append(timestamps.getTagedPhotosUpdatesTs());
+                url.append("&updates_tagged_photos=").append(timestamps.getTagedPhotosUpdatesTs());
             if (timestamps.getFriendsTs() != -1)
                 url.append("&updates_friends=").append(timestamps.getFriendsTs());
             if (timestamps.getActivitiesUpdatesTs() != -1)
