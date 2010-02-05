@@ -58,6 +58,10 @@ public class VkontakteAPI {
     private String remix;
     private String session;
 
+    public String getSession() {
+        return session;
+    }
+
     public void setCaptchaHandler(CaptchaHandler captchaHandler) {
         this.captchaHandler = captchaHandler;
     }
