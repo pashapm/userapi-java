@@ -367,13 +367,6 @@ public class VkontakteAPI {
         return photos;
     }
 
-    private long getCurrentMessagesBaseTimestamp() throws IOException, UserapiLoginException, JSONException {
-        String url = UrlBuilder.makeUrl("inbox", myId, 0, 0);
-        String jsonText = getTextFromUrl(url);
-        JSONObject messagesJson = new JSONObject(jsonText);
-        return messagesJson.getLong("h") / 1000000 * 1000000 + 1;
-    }
-
     /**
      * Returns messages history objects based on JSON object or null if timestamp is wrong.
      *
@@ -408,12 +401,7 @@ public class VkontakteAPI {
         String jsonText = getTextFromUrl(url);
         JSONObject historyJson = new JSONObject(jsonText);
 
-        List<MessageHistory> historyList = getMessagesHistory(historyJson);
-        // If timestamp is wrong
-        if (historyList == null)
-            return getPrivateMessagesHistory(getCurrentMessagesBaseTimestamp());
-
-        return historyList;
+        return getMessagesHistory(historyJson);
     }
 
     public List<Message> getPrivateMessages(long id, int from, int to, privateMessagesTypes type) throws IOException, JSONException, UserapiLoginException {
@@ -563,10 +551,6 @@ public class VkontakteAPI {
         if (messagesJson.has("message")) {
             JSONObject historyJson = messagesJson.getJSONObject("message");
             List<MessageHistory> historyList = getMessagesHistory(historyJson);
-            // If timestamp is wrong
-            if (historyList == null)
-                historyList = getPrivateMessagesHistory(getCurrentMessagesBaseTimestamp());
-
             history.setMessagesHistory(historyList);
         }
 
