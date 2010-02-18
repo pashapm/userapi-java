@@ -290,6 +290,10 @@ public class VkontakteAPI {
         return getFriends(myId, friendsTypes.friends);
     }
 
+    public List<User> getMyFriendsOnline() throws IOException, JSONException, UserapiLoginException {
+        return getFriends(myId, friendsTypes.friends_online);
+    }
+
     public List<User> getMyNewFriends() throws IOException, JSONException, UserapiLoginException {
         return getFriends(myId, friendsTypes.friends_new);
     }

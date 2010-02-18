@@ -6,12 +6,14 @@ import org.json.JSONException;
 import java.io.IOException;
 
 public class User {
-    private long userId;
-    private String userName;
-    private String userPhotoUrl;
-    private String userPhotoUrlSmall;
-    private boolean male;
-    private boolean online = false;
+    protected long userId;
+    protected String userName;
+    protected String userPhotoUrl;
+    protected String userPhotoUrlSmall;
+    protected boolean male;
+    protected boolean online = false;
+    protected boolean friend = false;
+    protected boolean newFriend = false;
     private VkontakteAPI api;
 
     //sometimes we don't get any avatar. then use it as default
@@ -71,6 +73,26 @@ public class User {
 
     public boolean isOnline() {
         return online;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
+    }
+
+    public boolean isFriend() {
+        return friend;
+    }
+
+    public void setFriend(boolean friend) {
+        this.friend = friend;
+    }
+
+    public boolean isNewFriend() {
+        return newFriend;
+    }
+
+    public void setNewFriend(boolean newFriend) {
+        this.newFriend = newFriend;
     }
 
     @Override
