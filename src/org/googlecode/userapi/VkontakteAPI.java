@@ -464,12 +464,15 @@ public class VkontakteAPI {
     }
 
     /**
-     * Returns wall messages list for a user
+     * Getting wall message list for a user
+     * @link http://userapi.com/?act=doc#wall
      *
-     * @param id   user id
-     * @param from first entry no.
-     * @param to   last entry no.
-     * @return the last element in this list
+     * @param id user id
+     * @param from first entry
+     * @param to last entry
+     * 
+     * @return wall message list
+     * 
      * @throws java.io.IOException    in case of connection problems
      * @throws org.json.JSONException
      */
