@@ -5,8 +5,12 @@ import org.json.JSONException;
 
 import java.io.IOException;
 
+/**
+ * User
+ */
 public class User {
-    protected long userId;
+
+	protected long userId;
     protected String userName;
     protected String userPhotoUrl;
     protected String userPhotoUrlSmall;
@@ -14,11 +18,44 @@ public class User {
     protected boolean online = false;
     protected boolean friend = false;
     protected boolean newFriend = false;
+    
+    /**
+     * @deprecated bean shouldn't contain any service 
+     */
     private VkontakteAPI api;
 
     //sometimes we don't get any avatar. then use it as default
     public static final String STUB_URL = "http://vkontakte.ru/images/question_b.gif";
 
+    /**
+     * Constructing user bean
+     * @param userInfo
+     * @throws JSONException
+     */
+    public User(JSONArray userInfo) throws JSONException {
+        if (userInfo.isNull(0)) {
+            return;
+        }
+
+        userId = userInfo.getLong(0);
+        int length = userInfo.length();
+        if (length >= 3) {
+            userName = userInfo.getString(1);
+            userPhotoUrl = userInfo.getString(2);
+            if (userPhotoUrl.equals("0")) userPhotoUrl = null;
+        }
+        if (length == 4)
+            online = userInfo.getInt(3) == 1;
+        if (length == 6) {
+            userPhotoUrlSmall = userPhotoUrl == null ? null : userPhotoUrl.substring(0, userPhotoUrl.lastIndexOf("/") + 1) + userInfo.getString(3) + ".jpg";
+            male = userInfo.getInt(4) == 2;
+            online = userInfo.getInt(5) == 1;
+        }
+    }
+    
+    /**
+     * @deprecated
+     */
     public User(JSONArray userInfo, VkontakteAPI api) throws JSONException {
         if (userInfo.isNull(0))
             return;
