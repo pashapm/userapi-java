@@ -108,6 +108,10 @@ public class User {
         return male;
     }
 
+    public void setMale(boolean male) {
+        this.male = male;
+    }
+
     public boolean isOnline() {
         return online;
     }

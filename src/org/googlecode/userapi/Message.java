@@ -7,13 +7,14 @@ import java.util.Date;
 
 public class Message {
     
-    private long id;
-    private Date date;
-    private String text;
-    private User sender;
-    private User receiver;
-    private long receiverId;
-    private boolean read;
+    protected long id;
+    protected Date date;
+    protected String text;
+    protected User sender;
+    protected User receiver;
+    protected long senderId;
+    protected long receiverId;
+    protected boolean read;
 
     public Message(JSONArray messageInfo, VkontakteAPI api) throws JSONException {
         id = messageInfo.getLong(0);
@@ -105,6 +106,14 @@ public class Message {
 
     public void setRead(boolean read) {
         this.read = read;
+    }
+
+    public long getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(long senderId) {
+        this.senderId = senderId;
     }
 
 }

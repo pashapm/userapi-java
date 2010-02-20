@@ -51,12 +51,12 @@ public class VkontakteAPI {
      */
     private int wasMessages = 0;
 
+    private String remix;
+    private String session;
+
     public String getRemix() {
         return remix;
     }
-
-    private String remix;
-    private String session;
 
     public String getSession() {
         return session;
