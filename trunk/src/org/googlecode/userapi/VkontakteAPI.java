@@ -215,7 +215,12 @@ public class VkontakteAPI {
             }
             for (int i = 0; i < fr.length(); i++) {
                 JSONArray userInfo = (JSONArray) fr.get(i);
-                friends.add(new User(userInfo, this));
+                User user = new User(userInfo, this);
+                if (type == friendsTypes.friends || type == friendsTypes.friends_online)
+                    user.setFriend(true);
+                if (type == friendsTypes.friends_new)
+                    user.setNewFriend(true);
+                friends.add(user);
             }
         }
         return friends;
