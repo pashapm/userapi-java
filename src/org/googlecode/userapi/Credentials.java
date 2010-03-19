@@ -1,6 +1,11 @@
 package org.googlecode.userapi;
 
-public class Credentials {
+import java.io.Serializable;
+
+public class Credentials implements Serializable {
+
+	private static final long serialVersionUID = 9058889072946466921L;
+
     private String login;
     private String pass;
     private String remixpass;
