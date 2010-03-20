@@ -110,6 +110,26 @@ public class VkontakteAPI {
         login = credentials.getLogin();
         pass = credentials.getPass();
         remix = credentials.getRemixpass();
+        session = credentials.getSid();
+        if (session != null) {
+            String url = UrlBuilder.makeUrl("history");
+            HttpGet httpGet = new HttpGet(url + "&sid=" + session);
+            HttpResponse response = httpClient.execute(httpGet);
+            HttpEntity httpEntity = response.getEntity();
+            String result;
+            if (httpEntity != null) {
+                result = EntityUtils.toString(httpEntity);
+                httpEntity.consumeContent();
+                if (result.equals(SESSION_EXPIRED)) {
+                    System.out.println("login with session failed: session expired!");
+                } else if (result.equals(CAPTCHA_REQUIRED)) {
+                    System.out.println("login with session failed: captcha required! (should never happen)");
+                } else {
+                    System.out.println("login with session success!");
+                    return;//session is ok
+                }
+            }
+        }
         if (remix != null) {
             session = loginWithRemix(remix);
             if (session != null && UserapiLoginException.fromSid(session) == null) {
@@ -121,6 +141,7 @@ public class VkontakteAPI {
         }
         session = loginWithPass(login, pass);
         checkSid(session);
+        credentials.setSid(session);
         System.out.println("login with pass success!");
     }
 
@@ -764,7 +785,7 @@ public class VkontakteAPI {
                 return getTextFromUrl(url);
             } else if (result.equals(CAPTCHA_REQUIRED)) {
                 System.out.println("captcha required!");
-                return doWothCaptchaOrThrow(url);
+                return doWithCaptchaOrThrow(url);
             }
         }
         return result;
@@ -784,13 +805,13 @@ public class VkontakteAPI {
                 return getTextFromUrl(url);
             } else if (result.equals(CAPTCHA_REQUIRED)) {
                 System.out.println("captcha required!");
-                return doWothCaptcha(url);
+                return doWithCaptcha(url);
             }
         }
         return result;
     }
 
-    private String doWothCaptcha(String url) throws IOException, UserapiLoginException {
+    private String doWithCaptcha(String url) throws IOException, UserapiLoginException {
         if (captchaHandler != null)
             return getTextFromUrl(prepareNewUrl(url));
         else {
@@ -803,7 +824,7 @@ public class VkontakteAPI {
         }
     }
 
-    private String doWothCaptchaOrThrow(String url) throws IOException, PageHiddenException, UserapiLoginException {
+    private String doWithCaptchaOrThrow(String url) throws IOException, PageHiddenException, UserapiLoginException {
         String newUrl = prepareNewUrl(url);
         return getTextFromUrlOrThrow(newUrl);
     }
