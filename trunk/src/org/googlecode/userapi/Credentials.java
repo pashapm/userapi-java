@@ -9,12 +9,21 @@ public class Credentials implements Serializable {
     private String login;
     private String pass;
     private String remixpass;
+    private String sid;
 
     public Credentials(String login, String pass, String remixpass) {
         if (login == null || pass == null) throw new IllegalArgumentException("login/pass must not be null");
         this.login = login;
         this.pass = pass;
         this.remixpass = remixpass;
+    }
+
+    public Credentials(String login, String pass, String remixpass, String sid) {
+        if (login == null || pass == null) throw new IllegalArgumentException("login/pass must not be null");
+        this.login = login;
+        this.pass = pass;
+        this.remixpass = remixpass;
+        this.sid = sid;
     }
 
     public String getLogin() {
@@ -27,6 +36,14 @@ public class Credentials implements Serializable {
 
     public String getRemixpass() {
         return remixpass;
+    }
+
+    public String getSid() {
+        return sid;
+    }
+
+    public void setSid(String sid) {
+        this.sid = sid;
     }
 
     public void setRemixpass(String remixpass) {
