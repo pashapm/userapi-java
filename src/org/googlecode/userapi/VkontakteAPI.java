@@ -22,6 +22,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.LinkedList;
@@ -763,8 +764,16 @@ public class VkontakteAPI {
         HttpEntity httpEntity = response.getEntity();
         byte[] result = null;
         if (httpEntity != null) {
-            result = EntityUtils.toByteArray(httpEntity);
-            httpEntity.consumeContent();
+            try {
+                result = HttpClientHelper.httpEntityToByteArray(httpEntity);
+            }
+            catch (InterruptedIOException e) {
+                httpGet.abort();
+                throw e;
+            }
+            finally {
+                httpEntity.consumeContent();
+            }
         }
         return result;
     }

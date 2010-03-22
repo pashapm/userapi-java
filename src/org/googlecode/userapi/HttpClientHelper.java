@@ -8,9 +8,11 @@ import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.cookie.BrowserCompatSpec;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.util.zip.GZIPInputStream;
 
 public class HttpClientHelper {
@@ -79,6 +81,36 @@ public class HttpClientHelper {
                 }
             }
         });
+    }
+
+    public static byte[] httpEntityToByteArray(final HttpEntity entity) throws IOException {
+        if (entity == null) {
+            throw new IllegalArgumentException("HTTP entity may not be null");
+        }
+        InputStream instream = entity.getContent();
+        if (instream == null) {
+            return new byte[] {};
+        }
+        if (entity.getContentLength() > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("HTTP entity too large to be buffered in memory");
+        }
+        int i = (int)entity.getContentLength();
+        if (i < 0) {
+            i = 4096;
+        }
+        ByteArrayBuffer buffer = new ByteArrayBuffer(i);
+        try {
+            byte[] tmp = new byte[4096];
+            int l;
+            while((l = instream.read(tmp)) != -1) {
+                if (Thread.interrupted())
+                    throw new InterruptedIOException("File download process was canceled");
+                buffer.append(tmp, 0, l);
+            }
+        } finally {
+            instream.close();
+        }
+        return buffer.toByteArray();
     }
 
 }
