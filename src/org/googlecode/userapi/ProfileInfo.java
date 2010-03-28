@@ -1,5 +1,6 @@
 package org.googlecode.userapi;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -72,6 +73,11 @@ public class ProfileInfo {
         //current city
         currentCity = profileJson.getJSONObject("ht").getString("cin");
 
+//        JSONObject photosJSON = profileJson.getJSONObject("ph");
+//        int photosCount = photosJSON.getInt("n");
+//        System.out.println("photosCount = " + photosCount);
+//        JSONArray photos = photosJSON.getJSONArray("d");
+//        System.out.println("photos.length() = " + photos.length()); //usually <=39       
     }
 
     public long getId() {
