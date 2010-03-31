@@ -8,7 +8,7 @@ import java.io.IOException;
 /**
  * User
  */
-public class User {
+public class User implements Comparable {
 
 	protected long userId;
     protected String userName;
@@ -147,4 +147,20 @@ public class User {
                 ", online=" + online +
                 '}';
     }
+
+    @Override
+    public int compareTo(Object o) {
+        if (o == null || !(o instanceof User))
+            return 1;
+
+        User that = (User) o;
+
+        if (this.userId < that.userId)
+            return -1;
+        else if (this.userId == that.userId)
+            return 0;
+        else
+            return 1;
+    }
+    
 }
