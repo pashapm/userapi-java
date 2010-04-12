@@ -112,6 +112,10 @@ public class VkontakteAPI {
         pass = credentials.getPass();
         remix = credentials.getRemixpass();
         session = credentials.getSid();
+        
+        Captcha.captcha_sid = credentials.captcha_sid;
+        Captcha.captcha_decoded = credentials.captcha_decoded;
+        
         if (session != null) {
             String url = UrlBuilder.makeUrl("history");
             HttpGet httpGet = new HttpGet(url + "&sid=" + session);
@@ -161,7 +165,7 @@ public class VkontakteAPI {
      */
     public String loginWithPass(String login, String pass) throws IOException {
         String urlString = UrlBuilder.makeLoginUrl(siteId, "force") + "&email=" + URLEncoder.encode(login, "UTF-8") + "&pass=" + URLEncoder.encode(pass, "UTF-8");
-        HttpGet get = new HttpGet(urlString);
+        HttpGet get = new HttpGet( Captcha.wrapCaptcha(urlString) );
         HttpResponse response = httpClient.execute(get);
         Header header = response.getFirstHeader("Location");
         String location = header != null ? header.getValue() : null;
@@ -172,7 +176,7 @@ public class VkontakteAPI {
             if (cookie.getName().equalsIgnoreCase("remixpassword")) remix = cookie.getValue();
             if (cookie.getName().equalsIgnoreCase("remixmid")) myId = Long.parseLong(cookie.getValue());
         }
-        return sid;
+        return sid;  
     }
 
 
@@ -839,7 +843,7 @@ public class VkontakteAPI {
     }
 
     private String prepareNewUrl(String url) {
-        if (captchaHandler == null) throw new IllegalStateException("captch handler must be set!");
+        if (captchaHandler == null) throw new IllegalStateException("captcha handler must be set!");
         String captcha_sid = String.valueOf(Math.abs(new Random().nextLong()));
         String captcha_url = UrlBuilder.makeUrl("captcha") + "&csid=" + captcha_sid;
         String captcha_code = captchaHandler.handleCaptcha(captcha_url);

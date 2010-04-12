@@ -10,6 +10,10 @@ public class Credentials implements Serializable {
     private String pass;
     private String remixpass;
     private String sid;
+    
+    //captcha stuff
+    public String captcha_sid;
+    public String captcha_decoded;
 
     public Credentials(String login, String pass, String remixpass) {
         if (login == null || pass == null) throw new IllegalArgumentException("login/pass must not be null");
