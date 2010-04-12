@@ -113,9 +113,6 @@ public class VkontakteAPI {
         remix = credentials.getRemixpass();
         session = credentials.getSid();
         
-        Captcha.captcha_sid = credentials.captcha_sid;
-        Captcha.captcha_decoded = credentials.captcha_decoded;
-        
         if (session != null) {
             String url = UrlBuilder.makeUrl("history");
             HttpGet httpGet = new HttpGet(url + "&sid=" + session);

@@ -14,7 +14,12 @@ public class Captcha {
     	}
     	return url;
     }
+    
+    public static void setCaptchaData(String captcha_sid, String captcha_decoded) {
+    	Captcha.captcha_sid = captcha_sid;
+    	Captcha.captcha_decoded = captcha_decoded;
+    }
 	
-    static String captcha_sid;
-    static String captcha_decoded;
+    private static String captcha_sid;
+    private static String captcha_decoded;
 }
