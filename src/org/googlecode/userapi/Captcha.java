@@ -5,7 +5,16 @@ package org.googlecode.userapi;
  * Date: Sep 9, 2009
  */
 public class Captcha {
-    String captcha_sid;
-    String url = "http://userapi.com/data?act=captcha&csid=" + captcha_sid;
-    //&fcsid={captcha_sid}&fccode={код, введенный пользователем}
+	
+    public static String wrapCaptcha(String url) {
+    	if (Captcha.captcha_sid != null && Captcha.captcha_decoded != null) {
+    		url += "&fcsid=" + captcha_sid + "&fccode=" + captcha_decoded;
+    		Captcha.captcha_sid = null;
+    		Captcha.captcha_decoded = null;
+    	}
+    	return url;
+    }
+	
+    static String captcha_sid;
+    static String captcha_decoded;
 }
