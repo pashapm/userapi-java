@@ -458,6 +458,24 @@ public class VkontakteAPI {
         return messages;
     }
 
+    public List<Message> getPrivateMessagesThread(long id, int from, int to) throws IOException, JSONException, UserapiLoginException {
+        List<Message> messages = new LinkedList<Message>();
+        String url = UrlBuilder.makeUrl(privateMessagesTypes.message.name(), id, from, to);
+        String jsonText = getTextFromUrl(url);
+        JSONObject messagesJson = new JSONObject(jsonText);
+//        Long count = messagesJson.getLong("n");
+//        Long history = messagesJson.getLong("h");
+        if (!messagesJson.getString("d").equals(EMPTY_JSON_OBJECT)) {
+            JSONArray messagesArray = messagesJson.getJSONArray("d");
+            for (int i = 0; i < messagesArray.length(); i++) {
+                JSONArray messageJson = (JSONArray) messagesArray.get(i);
+                messages.add(new Message(messageJson, this));
+            }
+            //todo: total count
+        }
+        return messages;
+    }
+
     public MessagesStruct getPrivateMessagesStruct(long id, int from, int to, privateMessagesTypes type) throws IOException, JSONException, UserapiLoginException {
         List<Message> messages = new LinkedList<Message>();
         String url = UrlBuilder.makeUrl(type.name(), id, from, to);
